@@ -26,8 +26,9 @@ class AuthRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'min:6'],
-            'role' => ['required', 'in:admin,user'],
+            'role' => ['required', 'in:student'],
             'bio' => ['nullable', 'string'],
+            'avatar'=>['nullable','mimes:png,jpg,jpeg,webp']
         ];
     }
 
@@ -44,7 +45,8 @@ class AuthRequest extends FormRequest
             'password_confirmation.required' => 'Konfirmasi password harus diisi.',
             'password_confirmation.min' => 'Konfirmasi password minimal 6 karakter.',
             'role.required' => 'Role harus dipilih.',
-            'role.in' => 'Role harus admin atau user.',
+            'role.in' => 'Role harus student',
+
         ];
     }
 }
