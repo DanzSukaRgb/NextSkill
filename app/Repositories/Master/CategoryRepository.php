@@ -18,7 +18,7 @@ class CategoryRepository
         return $this->model->all();
     }
 
-    public function paginate(?array $data,int $perPage = 10,int $page = 1)
+    public function paginate(?array $data, int $perPage = 10, int $page = 1)
     {
         $data = $data ?? [];
         $model = $this->model->query();
@@ -55,6 +55,6 @@ class CategoryRepository
     {
         $category = $this->model->find($id);
         $category->delete();
-        return $category->fresh();
+        return $category;
     }
 }

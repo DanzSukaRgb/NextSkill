@@ -26,6 +26,7 @@ class Course extends Model
         'level',
         'status',
         'is_certificate',
+        'price',
     ];
 
     protected function casts(): array
