@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\Master\CategoryController;
+use App\Http\Controllers\Master\CourseController;
+use App\Http\Controllers\Master\LessonController;
 use App\Http\Controllers\Master\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +24,18 @@ Route::middleware(['auth:sanctum', 'checkRole:admin'])->group(function () {
     Route::get('categories/{id}', [CategoryController::class, 'show']);
     Route::put('categories/{id}', [CategoryController::class, 'update']);
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
+
+    // Course routes
+    Route::apiResource('courses', CourseController::class);
+
+    // Lesson routes (nested under courses)
+    Route::prefix('courses/{courseId}/lessons')->group(function () {
+        Route::get('', [LessonController::class, 'index']);
+        Route::post('', [LessonController::class, 'store']);
+        Route::get('{id}', [LessonController::class, 'show']);
+        Route::put('{id}', [LessonController::class, 'update']);
+        Route::delete('{id}', [LessonController::class, 'destroy']);
+    });
 
     // User routes 
     Route::apiResource('users', UserController::class);
