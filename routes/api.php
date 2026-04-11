@@ -13,9 +13,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
 });
 
-// Category routes dengan UUID pada kolom id
-Route::get('categories', [CategoryController::class, 'index']);
-Route::post('categories', [CategoryController::class, 'store']);
-Route::get('categories/{category}', [CategoryController::class, 'show']);
-Route::put('categories/{category}', [CategoryController::class, 'update']);
-Route::delete('categories/{category}', [CategoryController::class, 'destroy']);
+// Category management - Admin only
+Route::middleware(['auth:sanctum', 'checkRole:admin'])->group(function () {
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::post('categories', [CategoryController::class, 'store']);
+    Route::get('categories/{id}', [CategoryController::class, 'show']);
+    Route::put('categories/{id}', [CategoryController::class, 'update']);
+    Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
+});
+
+// Bisa di-extend untuk role lainnya:
+// Route::middleware(['auth:sanctum', 'checkRole:moderator,admin'])->group(function () {
+//     Route::get('reports', [...]);
+//     Route::post('reports', [...]);
+// });

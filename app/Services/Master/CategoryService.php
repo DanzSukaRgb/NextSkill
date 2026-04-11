@@ -34,25 +34,8 @@ class CategoryService
         return $this->deleteFile($iconPath);
     }
 
-    /**
-     * Update icon kategori
-     */
-    public function handleUpdateIcon(Category $category, UploadedFile $newFile): ?string
-    {
-        return $this->updateFile($newFile, $category->icon);
-    }
 
-    /**
-     * Delete icon kategori
-     */
-    public function handleDeleteIcon(Category $category): void
-    {
-        if ($category->icon) {
-            $this->deleteIcon($category->icon);
-        }
-    }
-
-    public function create(mixed $data): Category
+    public function create(mixed $data)
     {
         if (isset($data['icon']) && $data['icon'] instanceof UploadedFile) {
             $data['icon'] = $this->uploadIcon($data['icon']);
@@ -61,10 +44,15 @@ class CategoryService
         return $this->repo->create($data);
     }
 
-    public function update(Category $category, array $data): Category
+    public function update(string $id, array $data): Category
     {
+        $category = $this->repo->findById($id);
         if (isset($data['icon']) && $data['icon'] instanceof UploadedFile) {
-            $data['icon'] = $this->handleUpdateIcon($category, $data['icon']);
+            if ($category->icon) {
+                $this->deleteIcon($category->icon);
+            }
+            
+            $data['icon'] = $this->uploadIcon($data['icon']);
         }
 
         return $this->repo->update($category->id, $data);
