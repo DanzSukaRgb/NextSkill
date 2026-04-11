@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('enrollments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('course_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('course_id')->constrained('courses')->cascadeOnDelete();
             $table->date('enrolled_at');
             $table->enum('status',['active','completed','cancelled']);
             $table->integer('progress_percentage')->default(0);

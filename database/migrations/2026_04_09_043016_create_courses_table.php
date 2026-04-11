@@ -12,11 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('courses', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('category_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('category_id')->constrained('categories')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
-            $table->string('slug')->unique();
             $table->string('thumbnail');
             $table->text('description');
             $table->enum('level',['beginner','intermediate','advanced']);

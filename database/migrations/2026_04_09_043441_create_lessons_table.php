@@ -12,10 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('lessons', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('course_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('course_id')->constrained('courses')->cascadeOnDelete();
             $table->string('title');
-            $table->string('slug')->unique();
             $table->text('content')->nullable();
             $table->string('vidio_url')->nullable();
             $table->string('file_path')->nullable();
