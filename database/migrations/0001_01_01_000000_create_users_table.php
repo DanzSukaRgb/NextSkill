@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->enum('role',['admin','mentor','student']);
             $table->text('bio');
+            $table->string('avatar')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
