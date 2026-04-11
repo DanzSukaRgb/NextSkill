@@ -7,7 +7,6 @@ use App\Helpers\PaginationHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\CategoryRequest;
 use App\Http\Resources\Master\CategoryResource;
-use App\Models\Category;
 use App\Repositories\Master\CategoryRepository;
 use App\Services\Master\CategoryService;
 use Illuminate\Http\Request;
@@ -67,8 +66,13 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Category $category)
+    public function show(string $id)
     {
+        $category = $this->repo->findById($id);
+        if (!$category) {
+            return BaseResponse::Error('Kategori tidak ditemukan', 404);
+        }
+
         return BaseResponse::Success('Detail kategori', new CategoryResource($category));
     }
 
@@ -83,17 +87,22 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(CategoryRequest $request, Category $category)
+    public function update(CategoryRequest $request, string $id)
     {
         DB::beginTransaction();
         try {
+            $check = $this->repo->findById($id);
+            if (!$check) {
+                DB::rollBack();
+                return BaseResponse::Error('Kategori tidak ditemukan', 404);
+            }
             $data = $request->validated();
-            $updatedCategory = $this->service->update($category, $data);
+            // dd($data);
+            $updatedCategory = $this->service->update($id, $data);
             DB::commit();
             return BaseResponse::Success('Kategori berhasil diperbarui', new CategoryResource($updatedCategory));
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error update kategori: ' . $e->getMessage(), ['exception' => $e]);
             return BaseResponse::Error('Gagal memperbarui kategori: ' . $e->getMessage(), 500);
         }
     }
@@ -101,12 +110,16 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Category $category)
+    public function destroy(string $id)
     {
         DB::beginTransaction();
         try {
-            $this->service->handleDeleteIcon($category);
-            $this->repo->delete($category->id);
+            $check = $this->repo->findById($id);
+            if (!$check) {
+                DB::rollBack();
+                return BaseResponse::Error('Kategori tidak ditemukan', 404);
+            }
+            $this->repo->delete($id);
             DB::commit();
             return BaseResponse::Success('Kategori berhasil dihapus', null);
         } catch (\Exception $e) {
