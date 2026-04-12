@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set branch name
         id: vars
@@ -57,6 +57,7 @@ jobs:
             --jq '.[0].url')
 
           echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          echo "Found PR URL: $PR_URL"
 
       - name: Create PR if not exists
         id: createpr
@@ -73,8 +74,9 @@ jobs:
             --body "PR otomatis dibuat dari branch \`$BRANCH\` ke \`main\` oleh GitHub Actions.")
 
           echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          echo "Created PR URL: $PR_URL"
 
-      - name: Reuse existing PR URL
+      - name: Resolve final PR URL
         id: finalpr
         run: |
           if [ -n "${{ steps.findpr.outputs.pr_url }}" ]; then
@@ -82,6 +84,14 @@ jobs:
           else
             echo "pr_url=${{ steps.createpr.outputs.pr_url }}" >> $GITHUB_OUTPUT
           fi
+
+      - name: Validate PR URL
+        run: |
+          if [ -z "${{ steps.finalpr.outputs.pr_url }}" ]; then
+            echo "PR URL kosong. PR gagal ditemukan atau gagal dibuat."
+            exit 1
+          fi
+          echo "Final PR URL: ${{ steps.finalpr.outputs.pr_url }}"
 
       - name: Enable auto-merge
         env:
