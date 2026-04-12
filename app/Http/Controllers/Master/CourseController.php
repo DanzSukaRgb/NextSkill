@@ -137,4 +137,17 @@ class CourseController extends Controller
             return BaseResponse::error('Gagal hapus kursus: ' . $e->getMessage(), 500);
         }
     }
+
+    public function listNoMentor()
+    {
+        $courses = $this->repo->courseNotHaveMentor();
+        return BaseResponse::success('Daftar kursus tanpa mentor', CourseResource::collection($courses));
+    }
+
+    public function listCourseActiveByMentor()
+    {
+        $mentorId = auth()->id();
+        $courses = $this->repo->listCourseActiveByMentor($mentorId);
+        return BaseResponse::success('Daftar kursus aktif oleh mentor', CourseResource::collection($courses));
+    }
 }

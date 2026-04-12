@@ -21,7 +21,7 @@ class CategoryRepository
     public function paginate(?array $data, int $perPage = 10, int $page = 1)
     {
         $data = $data ?? [];
-        $model = $this->model->query();
+        $model = $this->model->query()->withCount('courses');
 
         if (isset($data['search'])) {
             $model->where('name', 'like', '%' . $data['search'] . '%');

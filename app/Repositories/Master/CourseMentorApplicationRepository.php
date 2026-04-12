@@ -58,4 +58,11 @@ class CourseMentorApplicationRepository
         ]);
         return $application->fresh();
     }
+
+    public function listMentorApplyPending(string $mentorId)
+    {
+        return $this->model->where('user_id', $mentorId)
+            ->where('status', 'pending')
+            ->get();
+    }
 }

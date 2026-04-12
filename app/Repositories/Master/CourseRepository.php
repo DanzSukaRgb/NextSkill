@@ -70,4 +70,14 @@ class CourseRepository
         $course->update(['user_id' => $mentorId]);
         return $course;
     }
+
+    public function courseNotHaveMentor()
+    {
+        return $this->model->whereNull('user_id')->get();
+    }
+
+    public function listCourseActiveByMentor($mentorId)
+    {
+        return $this->model->where('user_id', $mentorId)->get();
+    }
 }

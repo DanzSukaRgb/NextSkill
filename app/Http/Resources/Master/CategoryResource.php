@@ -21,6 +21,7 @@ class CategoryResource extends JsonResource
             'icon' => $this->icon ? asset('storage/' . $this->icon) : null,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
+            'count_course' => $this->courses_count
         ];
     }
 }
