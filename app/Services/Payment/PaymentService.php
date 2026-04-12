@@ -3,11 +3,12 @@
 namespace App\Services\Payment;
 
 use App\Models\Course;
-use App\Models\User;
 use App\Models\Enrollment;
+use App\Models\Transaction;
+use App\Models\User;
 use App\Repositories\Payment\TransactionRepository;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -18,7 +19,7 @@ class PaymentService
     public function __construct(TransactionRepository $transactionRepo)
     {
         $this->transactionRepo = $transactionRepo;
-        
+
         // Setup Midtrans Configuration
         Config::$serverKey = config('services.midtrans.server_key');
         Config::$isProduction = config('services.midtrans.is_production', false);
@@ -29,9 +30,11 @@ class PaymentService
     public function checkout(Course $course, User $user): array
     {
         $transactionId = Str::uuid()->toString();
+        $invoiceNumber = $this->generateInvoiceNumber();
 
         $transaction = $this->transactionRepo->create([
             'id' => $transactionId,
+            'invoice_number' => $invoiceNumber,
             'user_id' => $user->id,
             'course_id' => $course->id,
             'gross_amount' => $course->price,
@@ -173,5 +176,17 @@ class PaymentService
         }
 
         return ['status' => 'success', 'code' => 200, 'message' => 'Callback processed'];
+    }
+
+    /**
+     * Generate unique invoice number
+     * Format: INV-YYYYMMDD-XXX
+     */
+    private function generateInvoiceNumber(): string
+    {
+        $today = now()->format('Ymd');
+        $count = Transaction::whereDate('created_at', today())->count() + 1;
+
+        return 'INV-' . $today . '-' . str_pad($count, 3, '0', STR_PAD_LEFT);
     }
 }
