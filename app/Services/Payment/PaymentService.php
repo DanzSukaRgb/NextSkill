@@ -2,11 +2,16 @@
 
 namespace App\Services\Payment;
 
+use App\Helpers\BaseResponse;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\MentorBalance;
+use App\Models\PlatformBalance;
+use App\Models\RevenueShare;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Repositories\Payment\TransactionRepository;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Midtrans\Config;
@@ -63,7 +68,6 @@ class PaymentService
         $midtransResponse = Snap::createTransaction($params);
         $snapToken = $midtransResponse->token;
         $paymentUrl = $midtransResponse->redirect_url;
-        
         $this->transactionRepo->update($transactionId, [
             'snap_token' => $snapToken,
             'payment_url' => $paymentUrl,
@@ -134,7 +138,7 @@ class PaymentService
         }
 
         // BRUTAL CHECK: Ensure paid amount matches our records to prevent price manipulation
-        if ((int)$grossAmount !== (int)$transaction->gross_amount) {
+        if ((int) $grossAmount !== (int) $transaction->gross_amount) {
             Log::critical('MIDTRANS PRICE MISMATCH DETECTED', [
                 'order_id' => $orderId,
                 'db_amount' => $transaction->gross_amount,
@@ -161,6 +165,14 @@ class PaymentService
         }
 
         if ($isSuccess && $transaction->status !== 'success') {
+            // Distribute revenue
+            try {
+                $this->revenueShare($transaction);
+            } catch (\Exception $e) {
+                Log::error('Revenue distribution failed: ' . $e->getMessage());
+                return ['status' => 'error', 'code' => 500, 'message' => 'Revenue distribution failed'];
+            }
+
             $this->transactionRepo->update($orderId, ['status' => 'success']);
 
             Enrollment::firstOrCreate([
@@ -188,5 +200,43 @@ class PaymentService
         $count = Transaction::whereDate('created_at', today())->count() + 1;
 
         return 'INV-' . $today . '-' . str_pad($count, 3, '0', STR_PAD_LEFT);
+    }
+
+    public function revenueShare(Transaction $transaction): void
+    {
+        $revenue = RevenueShare::latest()->first();
+
+        if (!$revenue) {
+            throw new \Exception('Revenue share configuration not found');
+        }
+
+        $mentorShare = ($transaction->gross_amount * $revenue->mentor_revenue_share) / 100;
+        $platformShare = ($transaction->gross_amount * $revenue->platform_revenue_share) / 100;
+
+        $transaction->update([
+            'mentor_revenue' => $mentorShare,
+            'platform_revenue' => $platformShare,
+        ]);
+
+        $mentorUserId = $transaction->course->user_id;
+
+        MentorBalance::updateOrCreate(
+            ['user_id' => $mentorUserId],
+            ['balance' => DB::raw("balance + " . (float) $mentorShare)]
+        );
+
+        $platformBalance = PlatformBalance::first();
+        if ($platformBalance) {
+            $platformBalance->update([
+                'balance' => DB::raw("balance + " . (float) $platformShare)
+            ]);
+        }
+
+        Log::info('Revenue distributed', [
+            'transaction_id' => $transaction->id,
+            'mentor_user_id' => $mentorUserId,
+            'mentor_revenue' => $mentorShare,
+            'platform_revenue' => $platformShare,
+        ]);
     }
 }
