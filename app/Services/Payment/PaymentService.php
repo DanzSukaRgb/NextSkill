@@ -66,9 +66,9 @@ class PaymentService
             'payment_url' => $paymentUrl,
         ]);
 
-        $debugPayload = null;
+        $simulationPayload = null;
         if (!config('services.midtrans.is_production', false)) {
-            $debugPayload = [
+            $simulationPayload = [
                 'order_id' => $transactionId,
                 'status_code' => '200',
                 'gross_amount' => (string) $course->price,
@@ -84,7 +84,7 @@ class PaymentService
             'status' => 'success',
             'snap_token' => $snapToken,
             'payment_url' => $paymentUrl,
-            'test_callback_json' => $debugPayload,
+            'simulation_data' => $simulationPayload,
         ];
     }
 
