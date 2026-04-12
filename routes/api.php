@@ -1,14 +1,15 @@
 <?php
 
+use App\Http\Controllers\Admin\RevenueShareController;
+use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Api\PaymentCallbackController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\CourseMentorApplicationController;
 use App\Http\Controllers\Master\CategoryController;
 use App\Http\Controllers\Master\CourseController;
 use App\Http\Controllers\Master\LessonController;
 use App\Http\Controllers\Master\User\UserController;
-use App\Http\Controllers\Api\PaymentController;
-use App\Http\Controllers\Api\PaymentCallbackController;
-use App\Http\Controllers\Admin\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -64,6 +65,7 @@ Route::middleware(['auth:sanctum', 'checkRole:admin'])->group(function () {
     Route::get('transactions/export/report', [TransactionController::class, 'export']);
     Route::get('transactions', [TransactionController::class, 'index']);
     Route::get('transactions/{id}', [TransactionController::class, 'show']);
+    Route::put('revenue-share', [RevenueShareController::class, 'updateRevenueShare']);
 });
 
 // Bisa di-extend untuk role lainnya:
