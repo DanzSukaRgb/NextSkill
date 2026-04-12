@@ -57,19 +57,57 @@ class PaymentService
             ]
         ];
 
-        $snapToken = Snap::getSnapToken($params);
-        $paymentUrl = \Midtrans\Snap::createTransaction($params)->redirect_url;
+        $midtransResponse = Snap::createTransaction($params);
+        $snapToken = $midtransResponse->token;
+        $paymentUrl = $midtransResponse->redirect_url;
         
         $this->transactionRepo->update($transactionId, [
             'snap_token' => $snapToken,
             'payment_url' => $paymentUrl,
         ]);
 
+        $simulationPayload = null;
+        if (!config('services.midtrans.is_production', false)) {
+            $simulationPayload = [
+                'order_id' => $transactionId,
+                'status_code' => '200',
+                'gross_amount' => (string) $course->price,
+                'signature_key' => hash('sha512', $transactionId . '200' . $course->price . config('services.midtrans.server_key')),
+                'transaction_status' => 'settlement',
+                'fraud_status' => 'accept',
+                'transaction_id' => Str::uuid()->toString(),
+                'payment_type' => 'bank_transfer',
+            ];
+        }
+
         return [
             'status' => 'success',
             'snap_token' => $snapToken,
             'payment_url' => $paymentUrl,
+            'simulation_data' => $simulationPayload,
         ];
+    }
+
+    public function enrollFreeCourse(Course $course, User $user): array
+    {
+        // Prevent duplicate enrollment
+        $exists = Enrollment::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->exists();
+
+        if ($exists) {
+            return ['status' => 'error', 'code' => 400, 'message' => 'Sudah terdaftar di kursus ini'];
+        }
+
+        Enrollment::create([
+            'user_id' => $user->id,
+            'course_id' => $course->id,
+            'enrolled_at' => now(),
+            'status' => 'active',
+            'progress_percentage' => 0,
+        ]);
+
+        return ['status' => 'success', 'code' => 200, 'message' => 'Berhasil mendaftar (Kursus Gratis)'];
     }
 
     public function handleCallback(array $payload): array
@@ -87,13 +125,23 @@ class PaymentService
             return ['status' => 'error', 'code' => 403, 'message' => 'Invalid signature'];
         }
 
-        $transactionStatus = $payload['transaction_status'] ?? '';
-        $fraudStatus = $payload['fraud_status'] ?? '';
-
         $transaction = $this->transactionRepo->findById($orderId);
         if (!$transaction) {
             return ['status' => 'error', 'code' => 404, 'message' => 'Transaction not found'];
         }
+
+        // BRUTAL CHECK: Ensure paid amount matches our records to prevent price manipulation
+        if ((int)$grossAmount !== (int)$transaction->gross_amount) {
+            Log::critical('MIDTRANS PRICE MISMATCH DETECTED', [
+                'order_id' => $orderId,
+                'db_amount' => $transaction->gross_amount,
+                'paid_amount' => $grossAmount
+            ]);
+            return ['status' => 'error', 'code' => 400, 'message' => 'Gross amount mismatch'];
+        }
+
+        $transactionStatus = $payload['transaction_status'] ?? '';
+        $fraudStatus = $payload['fraud_status'] ?? '';
 
         $isSuccess = false;
 
@@ -120,6 +168,8 @@ class PaymentService
                 'status' => 'active',
                 'progress_percentage' => 0,
             ]);
+
+            Log::info('MIDTRANS SUCCESS: Payment confirmed for order ' . $orderId);
         }
 
         return ['status' => 'success', 'code' => 200, 'message' => 'Callback processed'];

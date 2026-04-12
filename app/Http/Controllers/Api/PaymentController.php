@@ -23,7 +23,13 @@ class PaymentController extends Controller
         $user = auth()->user();
 
         if ($course->price <= 0) {
-            return BaseResponse::Error('This course is free, use enrollment endpoint instead.');
+            $result = $this->paymentService->enrollFreeCourse($course, $user);
+            
+            if ($result['status'] === 'error') {
+                return BaseResponse::Error($result['message'], $result['code']);
+            }
+
+            return BaseResponse::Success($result['message'], null);
         }
 
         try {
