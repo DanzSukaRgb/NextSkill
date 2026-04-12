@@ -1,0 +1,90 @@
+name: Auto PR and Auto Merge to main
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - master
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: auto-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  create-pr-and-enable-automerge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set branch name
+        id: vars
+        run: echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Skip protected/internal branches
+        id: skipcheck
+        run: |
+          BRANCH="${{ steps.vars.outputs.branch }}"
+
+          if [[ "$BRANCH" == "main" || "$BRANCH" == "master" || "$BRANCH" == auto-pr/* ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Stop if skipped
+        if: steps.skipcheck.outputs.skip == 'true'
+        run: |
+          echo "Branch skipped."
+          exit 0
+
+      - name: Find existing PR
+        id: findpr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ steps.vars.outputs.branch }}"
+          PR_URL=$(gh pr list \
+            --head "$BRANCH" \
+            --base "main" \
+            --state open \
+            --json url \
+            --jq '.[0].url')
+
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+
+      - name: Create PR if not exists
+        id: createpr
+        if: steps.findpr.outputs.pr_url == ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ steps.vars.outputs.branch }}"
+
+          PR_URL=$(gh pr create \
+            --base "main" \
+            --head "$BRANCH" \
+            --title "Auto PR: $BRANCH -> main" \
+            --body "PR otomatis dibuat dari branch \`$BRANCH\` ke \`main\` oleh GitHub Actions.")
+
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+
+      - name: Reuse existing PR URL
+        id: finalpr
+        run: |
+          if [ -n "${{ steps.findpr.outputs.pr_url }}" ]; then
+            echo "pr_url=${{ steps.findpr.outputs.pr_url }}" >> $GITHUB_OUTPUT
+          else
+            echo "pr_url=${{ steps.createpr.outputs.pr_url }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Enable auto-merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge --auto --squash "${{ steps.finalpr.outputs.pr_url }}"
