@@ -29,7 +29,7 @@ class CourseController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->perPage ?? 10;
+        $perPage = $request->perPage ?? 5;
         $page = $request->page ?? 1;
         $payload = $request->only([
             'search',

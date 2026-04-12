@@ -26,7 +26,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->perPage ?? 10;
+        $perPage = $request->perPage ?? 6;
         $page = $request->page ?? 1;
         $payload = $request->only([
             'search',
@@ -95,5 +95,17 @@ class UserController extends Controller
             DB::rollback();
             return BaseResponse::Error($e->getMessage(), 500);
         }
+    }
+
+    public function listMentors(Request $request)
+    {
+        $perPage = $request->perPage ?? 6;
+        $page = $request->page ?? 1;
+        $search = $request->search ?? null;
+        $mentors = $this->repo->mentorsPaginate([ 'search' => $search], $perPage, $page);
+        return BaseResponse::Success('List mentor', [
+            'data' => $mentors->items(),
+            'pagination' => PaginationHelper::paginate($mentors),
+        ]);
     }
 }
