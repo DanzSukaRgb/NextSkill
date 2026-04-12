@@ -23,7 +23,7 @@ class CategoryRequest extends FormRequest
 
         return [
             'name' => $nameRule,
-            'icon' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg'],
+            'icon' => ['nullable', 'max:2048'],
             'description' => ['nullable', 'string'],
         ];
     }
@@ -34,9 +34,7 @@ class CategoryRequest extends FormRequest
             'name.required' => 'Nama kategori harus diisi.',
             'name.string' => 'Nama kategori harus berupa string.',
             'name.max' => 'Nama kategori maksimal 255 karakter.',
-            'icon.image' => 'Ikon kategori harus berupa gambar.',
             'icon.max' => 'Ikon kategori maksimal 2 MB.',
-            'icon.mimes' => 'Ikon kategori harus berupa file gambar (jpeg, png, jpg).',
             'description.string' => 'Deskripsi kategori harus berupa string.',
         ];
     }
