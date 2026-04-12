@@ -21,7 +21,8 @@ class CourseMentorApplicationRepository
 
     public function paginate(int $perPage = 5, int $page = 1)
     {
-        $model = $this->model->query();
+        $model = $this->model->query()
+        ->with(['course:id,title,level', 'user:id,name,email']);
         return $model->paginate($perPage, ['*'], 'page', $page);
     }
 
@@ -57,5 +58,12 @@ class CourseMentorApplicationRepository
             'rejection_reason' => $reason,
         ]);
         return $application->fresh();
+    }
+
+    public function listMentorApplyPending(string $mentorId)
+    {
+        return $this->model->where('user_id', $mentorId)
+            ->where('status', 'pending')
+            ->get();
     }
 }

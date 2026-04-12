@@ -64,4 +64,13 @@ class CourseMentorApplicationController extends Controller
             return BaseResponse::error($e->getMessage(), 400);
         }
     }
+
+    public function listMentorApplyPending()
+    {
+        $mentorId = auth()->id();
+        $applications = $this->repo->listMentorApplyPending($mentorId);
+        return BaseResponse::success('Daftar aplikasi mentor kursus yang pending', [
+            'data' => $applications,
+        ]);
+    }
 }

@@ -18,14 +18,22 @@ Route::post('midtrans/callback', [PaymentCallbackController::class, 'callback'])
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::put('users/{id}', [UserController::class, 'update']);
+    Route::get('categories', [CategoryController::class, 'index']);
     Route::post('checkout', [PaymentController::class, 'checkout']);
-    Route::put('users/{id}',[UserController::class,'update']);
+});
+
+// Mentor only
+Route::middleware(['auth:sanctum', 'checkRole:mentor'])->group(function () {
+    Route::get('courses/no-mentor', [CourseController::class, 'listNoMentor']);
+    Route::post('courses/{courseId}/apply-mentor', [CourseMentorApplicationController::class, 'apply']);
+    Route::get('courses/active-by-mentor', [CourseController::class, 'listCourseActiveByMentor']);
+    Route::get('course-mentor-applications/pending', [CourseMentorApplicationController::class, 'listMentorApplyPending']);
 });
 
 // Admin only
 Route::middleware(['auth:sanctum', 'checkRole:admin'])->group(function () {
     // Category routes
-    Route::get('categories', [CategoryController::class, 'index']);
     Route::post('categories', [CategoryController::class, 'store']);
     Route::get('categories/{id}', [CategoryController::class, 'show']);
     Route::put('categories/{id}', [CategoryController::class, 'update']);
@@ -50,12 +58,6 @@ Route::middleware(['auth:sanctum', 'checkRole:admin'])->group(function () {
     // User routes 
     Route::get('users/mentors', [UserController::class, 'listMentors']);
     Route::apiResource('users', UserController::class)->except(['update']);
-});
-
-// Mentor only
-Route::middleware(['auth:sanctum', 'checkRole:mentor'])->group(function () {
-    // Mentor apply to be course mentor 
-    Route::post('courses/{courseId}/apply-mentor', [CourseMentorApplicationController::class, 'apply']);
 });
 
 // Bisa di-extend untuk role lainnya:
