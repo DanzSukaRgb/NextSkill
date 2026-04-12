@@ -72,6 +72,28 @@ class PaymentService
         ];
     }
 
+    public function enrollFreeCourse(Course $course, User $user): array
+    {
+        // Prevent duplicate enrollment
+        $exists = Enrollment::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->exists();
+
+        if ($exists) {
+            return ['status' => 'error', 'code' => 400, 'message' => 'Sudah terdaftar di kursus ini'];
+        }
+
+        Enrollment::create([
+            'user_id' => $user->id,
+            'course_id' => $course->id,
+            'enrolled_at' => now(),
+            'status' => 'active',
+            'progress_percentage' => 0,
+        ]);
+
+        return ['status' => 'success', 'code' => 200, 'message' => 'Berhasil mendaftar (Kursus Gratis)'];
+    }
+
     public function handleCallback(array $payload): array
     {
         $orderId = $payload['order_id'] ?? '';
