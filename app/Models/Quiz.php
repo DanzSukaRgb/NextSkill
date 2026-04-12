@@ -13,11 +13,15 @@ class Quiz extends Model
 
     protected $fillable = [
         'course_id',
+        'lesson_id',
         'title',
         'description',
         'instruction',
         'time_limit',
         'minimum_score',
+        'type',
+        'quiz_scope',
+        'total_questions',
     ];
 
     public function course(): BelongsTo
@@ -25,9 +29,19 @@ class Quiz extends Model
         return $this->belongsTo(Course::class);
     }
 
+    public function lesson(): BelongsTo
+    {
+        return $this->belongsTo(Lesson::class);
+    }
+
     public function questions(): HasMany
     {
         return $this->hasMany(QuizQuestion::class);
+    }
+
+    public function matchings(): HasMany
+    {
+        return $this->hasMany(QuizMatching::class);
     }
 
     public function attempts(): HasMany

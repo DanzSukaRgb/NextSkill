@@ -2,14 +2,17 @@
 
 use App\Http\Controllers\Admin\RevenueShareController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\PaymentCallbackController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\CourseMentorApplicationController;
 use App\Http\Controllers\Master\CategoryController;
 use App\Http\Controllers\Master\CourseController;
 use App\Http\Controllers\Master\LessonController;
 use App\Http\Controllers\Master\User\UserController;
+use App\Http\Controllers\Mentor\QuizManagementController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -23,6 +26,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('users/{id}', [UserController::class, 'update']);
     Route::get('categories', [CategoryController::class, 'index']);
     Route::post('checkout', [PaymentController::class, 'checkout']);
+
+    Route::get('leaderboard/top-learners', [LeaderboardController::class, 'topLearners']);
+
+    Route::get('quizzes/{quizId}', [QuizController::class, 'show']);
+    Route::post('quizzes/{quizId}/submit', [QuizController::class, 'submitAnswers']);
+    Route::get('quizzes/{quizId}/attempts', [QuizController::class, 'getAttempts']);
+    Route::get('quiz-attempts/{attemptId}/result', [QuizController::class, 'getResult']);
 });
 
 // Mentor only
@@ -31,6 +41,18 @@ Route::middleware(['auth:sanctum', 'checkRole:mentor'])->group(function () {
     Route::post('courses/{courseId}/apply-mentor', [CourseMentorApplicationController::class, 'apply']);
     Route::get('courses/active-by-mentor', [CourseController::class, 'listCourseActiveByMentor']);
     Route::get('course-mentor-applications/pending', [CourseMentorApplicationController::class, 'listMentorApplyPending']);
+
+    Route::post('quizzes', [QuizManagementController::class, 'store']);
+    Route::put('quizzes/{quizId}', [QuizManagementController::class, 'update']);
+    Route::delete('quizzes/{quizId}', [QuizManagementController::class, 'destroy']);
+    Route::get('quizzes/{quizId}/manage', [QuizManagementController::class, 'show']);
+    Route::get('courses/{courseId}/quizzes', [QuizManagementController::class, 'quizzesByCourse']);
+
+    Route::post('quizzes/{quizId}/questions/mcq', [QuizManagementController::class, 'addMCQQuestions']);
+    Route::delete('questions/{questionId}', [QuizManagementController::class, 'deleteMCQQuestion']);
+
+    Route::post('quizzes/{quizId}/questions/matching', [QuizManagementController::class, 'addMatchingPairs']);
+    Route::delete('matchings/{matchingId}', [QuizManagementController::class, 'deleteMatchingPair']);
 });
 
 // Admin only
@@ -66,10 +88,6 @@ Route::middleware(['auth:sanctum', 'checkRole:admin'])->group(function () {
     Route::get('transactions', [TransactionController::class, 'index']);
     Route::get('transactions/{id}', [TransactionController::class, 'show']);
     Route::put('revenue-share', [RevenueShareController::class, 'updateRevenueShare']);
-});
 
-// Bisa di-extend untuk role lainnya:
-// Route::middleware(['auth:sanctum', 'checkRole:moderator,admin'])->group(function () {
-//     Route::get('reports', [...]);
-//     Route::post('reports', [...]);
-// });
+    Route::get('admin/leaderboard/top-learners', [LeaderboardController::class, 'topLearners']);
+});
