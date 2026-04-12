@@ -6,17 +6,21 @@ use App\Http\Controllers\Master\CategoryController;
 use App\Http\Controllers\Master\CourseController;
 use App\Http\Controllers\Master\LessonController;
 use App\Http\Controllers\Master\User\UserController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PaymentCallbackController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
+Route::post('midtrans/callback', [PaymentCallbackController::class, 'callback']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::put('users/{id}', [UserController::class, 'update']);
     Route::get('categories', [CategoryController::class, 'index']);
+    Route::post('checkout', [PaymentController::class, 'checkout']);
 });
 
 // Mentor only
