@@ -18,7 +18,7 @@ class CourseRepository
         return $this->model->all();
     }
 
-    public function paginate(?array $data, int $perPage = 10, int $page = 1)
+    public function paginate(?array $data, int $perPage = 5, int $page = 1)
     {
         $data = $data ?? [];
         $model = $this->model->query()
@@ -61,6 +61,13 @@ class CourseRepository
     {
         $course = $this->model->find($id);
         $course->delete();
+        return $course;
+    }
+
+    public function addMentor($courseId, $mentorId)
+    {
+        $course = $this->model->find($courseId);
+        $course->update(['user_id' => $mentorId]);
         return $course;
     }
 }

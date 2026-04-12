@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\auth\AuthController;
+use App\Http\Controllers\CourseMentorApplicationController;
 use App\Http\Controllers\Master\CategoryController;
 use App\Http\Controllers\Master\CourseController;
 use App\Http\Controllers\Master\LessonController;
@@ -14,6 +15,7 @@ Route::post('register', [AuthController::class, 'register']);
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::put('users/{id}', [UserController::class, 'update']);
 });
 
 // Admin only
@@ -37,8 +39,19 @@ Route::middleware(['auth:sanctum', 'checkRole:admin'])->group(function () {
         Route::delete('{id}', [LessonController::class, 'destroy']);
     });
 
+    // Course Mentor Application routes
+    Route::get('course-mentor-applications', [CourseMentorApplicationController::class, 'index']);
+    Route::put('course-mentor-applications/{id}/status', [CourseMentorApplicationController::class, 'updateStatus']);
+
     // User routes 
-    Route::apiResource('users', UserController::class);
+    Route::get('users/mentors', [UserController::class, 'listMentors']);
+    Route::apiResource('users', UserController::class)->except(['update']);
+});
+
+// Mentor only
+Route::middleware(['auth:sanctum', 'checkRole:mentor'])->group(function () {
+    // Mentor apply to be course mentor 
+    Route::post('courses/{courseId}/apply-mentor', [CourseMentorApplicationController::class, 'apply']);
 });
 
 // Bisa di-extend untuk role lainnya:

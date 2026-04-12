@@ -46,7 +46,7 @@ class AuthRequest extends FormRequest
             'password_confirmation.min' => 'Konfirmasi password minimal 6 karakter.',
             'role.required' => 'Role harus dipilih.',
             'role.in' => 'Role harus student',
-
+            'avatar.mimes' => 'Avatar harus berupa file dengan format: png, jpg, jpeg, webp.',
         ];
     }
 }

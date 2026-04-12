@@ -18,7 +18,7 @@ class UserRepository
         return $this->model->all();
     }
 
-    public function paginate(?array $data, int $perPage = 10, int $page = 1)
+    public function paginate(?array $data, int $perPage = 6, int $page = 1)
     {
         $data = $data ?? [];
         $model = $this->model->query()
@@ -64,5 +64,23 @@ class UserRepository
         $user = $this->model->find($id);
         $user->delete();
         return $user;
+    }
+
+    public function mentorsPaginate(?array $data, int $perPage = 5, int $page = 1)
+    {
+        $data = $data ?? [];
+        $model = $this->model->query()
+            ->where('role', 'mentor')
+            ->withCount('courses');
+
+        if (isset($data['search'])) {
+            $model->where(function ($query) use ($data) {
+                $query->where('name', 'like', '%' . $data['search'] . '%')
+                    ->orWhere('email', 'like', '%' . $data['search'] . '%');
+            });
+        }
+
+        $model->orderBy('created_at', 'desc');
+        return $model->paginate($perPage, ['*'], 'page', $page);
     }
 }
