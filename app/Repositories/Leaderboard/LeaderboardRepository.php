@@ -10,59 +10,61 @@ use Illuminate\Support\Facades\DB;
 
 class LeaderboardRepository
 {
+
+    private $studentPointModel;
+    private $userLevelModel;
+
+    public function __construct(StudentPoint $studentPointModel, UserLevel $userLevelModel)
+    {
+        $this->studentPointModel = $studentPointModel;
+        $this->userLevelModel = $userLevelModel;
+    }
     /**
      * Get top learners for current month
      */
-    public function getTopLearners($limit = 10, $month = null, $year = null){
-        $month = $month ?? now()->month;
-        $year = $year ?? now()->year;
+    public function getTopLearners($limit = 10){
 
-        $topLearners = StudentPoint::selectRaw('student_id, SUM(points) as total_points')
-        ->whereYear('gained_at', $year)
-        ->whereMonth('gained_at', $month)
+        $topLearners = $this->studentPointModel->selectRaw('student_id, SUM(points) as total_points')
         ->groupBy('student_id')
         ->orderByDesc('total_points')
         ->limit($limit)
-        ->with('student:id,name')
+        ->with('student:id,name,avatar')
         ->get();
 
         $leaderboard = [];
         $rank = 1;
         foreach ($topLearners as $learner) {
             $student = $learner->student;
-            $userLevel = UserLevel::where('user_id', $learner->student_id)->first();
+            $userLevel = $this->userLevelModel->where('user_id', $learner->student_id)->first();
             $enrollments = $student->enrollments()->distinct('course_id')->pluck('course_id');
             $courses = Course::whereIn('id', $enrollments)->pluck('title');
 
             $leaderboard[] = [
                 'rank' => $rank++,
                 'student_name' => $student->name,
-                'username' => $student->username,
                 'level' => $userLevel?->level ?? 1,
                 'total_points' => $learner->total_points,
                 'active_courses' => $courses,
                 'avatar' => $student->avatar,
-                ''
+                'total_xp' => $userLevel?->total_xp ?? 0
             ];
         }
 
-        return $topLearners;
+        return $leaderboard;
 
     }
 
-    public function addPoints($studentId, $points, $pointsSource, $sourceId = null)
-    {
-        StudentPoint::create([
+    public function addPoints($studentId, $points, $poinstSource, $sourceId = null) {
+        $this->studentPointModel->create([
             'student_id' => $studentId,
-            'points_source' => $pointsSource,
+            'points_source' => $poinstSource,
             'source_id' => $sourceId,
             'points' => $points,
         ]);
 
-        $userLevel = UserLevel::where('user_id', $studentId)->first();
-
-        if (!$userLevel) {
-            $userLevel = UserLevel::create([
+        $userLevel =$this->userLevelModel->first();
+        if(!$userLevel){
+            $userLevel = $this->userLevelModel->create([
                 'user_id' => $studentId,
                 'level' => 1,
                 'total_xp' => 0,
@@ -72,8 +74,7 @@ class LeaderboardRepository
         $newXp = $userLevel->total_xp + $points;
         $newLevel = $userLevel->level;
         $xpForNextLevel = $userLevel->xp_for_next_level;
-
-        while ($newXp >= $xpForNextLevel) {
+        while($newXp >= $xpForNextLevel){
             $newXp -= $xpForNextLevel;
             $newLevel++;
             $xpForNextLevel = $this->calculateXpForNextLevel($newLevel);
@@ -87,11 +88,6 @@ class LeaderboardRepository
 
         return $userLevel;
     }
-
-    /**
-     * Calculate XP required for next level
-     * Formula: Base XP (1000) * level multiplier
-     */
     private function calculateXpForNextLevel($level)
     {
         return 1000 * $level;

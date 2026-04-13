@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\DB;
 
 class QuizRepository
 {
+    private $model;
+    
+    public function __construct(Quiz $model)
+    {
+        $this->model = $model;
+    }
     /**
      * Create new quiz
      */
@@ -30,12 +36,17 @@ class QuizRepository
         return $quiz;
     }
 
+    public function find($quizId)
+    {
+        return $this->model->find($quizId);
+    }
+
     /**
      * Get quiz by id with relationships
      */
     public function findWithQuestions($quizId)
     {
-        return Quiz::with(['questions.options', 'matchings'])->find($quizId);
+        return $this->model->with(['questions.options', 'matchings'])->find($quizId);
     }
 
     /**
@@ -43,9 +54,14 @@ class QuizRepository
      */
     public function getByCourse($courseId)
     {
-        return Quiz::where('course_id', $courseId)
+        return $this->model->where('course_id', $courseId)
             ->with(['lesson', 'questions', 'matchings'])
             ->get();
+    }
+
+    public function quizWithCourseAndLesson($quizId)
+    {
+        return $this->model->with(['course', 'lesson','questions.options','matchings'])->find($quizId);
     }
 
     /**
@@ -56,7 +72,7 @@ class QuizRepository
         return DB::transaction(function () use ($quizId) {
             QuizQuestion::where('quiz_id', $quizId)->delete();
             QuizMatching::where('quiz_id', $quizId)->delete();
-            return Quiz::find($quizId)->delete();
+            return $this->model->find($quizId)->delete();
         });
     }
 
