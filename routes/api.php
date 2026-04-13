@@ -2,11 +2,14 @@
 
 use App\Http\Controllers\Admin\RevenueShareController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\AdminWithdrawalController;
 use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\PaymentCallbackController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\StudentCourseController;
+use App\Http\Controllers\Api\LessonProgressController;
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\CourseMentorApplicationController;
 use App\Http\Controllers\Master\CategoryController;
@@ -15,6 +18,8 @@ use App\Http\Controllers\Master\LessonController;
 use App\Http\Controllers\Master\User\UserController;
 use App\Http\Controllers\Mentor\QuizManagementController;
 use App\Http\Controllers\Mentor\TaskManagementController;
+use App\Http\Controllers\Mentor\StudentManagementController;
+use App\Http\Controllers\Mentor\MentorWithdrawalController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -29,6 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('categories', [CategoryController::class, 'index']);
     Route::post('checkout', [PaymentController::class, 'checkout']);
 
+    Route::get('courses', [CourseController::class, 'index']);
+    Route::get('courses/{id}', [CourseController::class, 'show']);
+
     Route::get('leaderboard/top-learners', [LeaderboardController::class, 'topLearners']);
 
     Route::get('quizzes/{quizId}', [QuizController::class, 'show']);
@@ -41,6 +49,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('tasks/{taskId}/submit', [TaskController::class, 'submit']);
     Route::post('tasks/{taskId}/save-draft', [TaskController::class, 'saveDraft']);
     Route::get('submissions/my-submissions', [TaskController::class, 'mySubmissions']);
+
+    Route::get('my-courses', [StudentCourseController::class, 'getMyCourses']);
+    Route::get('courses/{courseId}/detail', [StudentCourseController::class, 'getCourseDetail']);
+    Route::get('my-certificates', [StudentCourseController::class, 'getMyCertificates']);
+    Route::get('certificates/{certificateId}/download', [StudentCourseController::class, 'downloadCertificatePDF']);
+
+    Route::post('lessons/{lessonId}/mark-complete', [LessonProgressController::class, 'markComplete']);
+    Route::get('lessons/{lessonId}/progress', [LessonProgressController::class, 'getProgress']);
 });
 
 // Mentor only
@@ -68,6 +84,24 @@ Route::middleware(['auth:sanctum', 'checkRole:mentor'])->group(function () {
     Route::get('tasks/{taskId}/manage', [TaskManagementController::class, 'show']);
     Route::get('courses/{courseId}/tasks/manage', [TaskManagementController::class, 'tasksByCourse']);
     Route::put('task-submissions/{submissionId}/grade', [TaskManagementController::class, 'gradeSubmission']);
+
+    Route::get('students', [StudentManagementController::class, 'index']);
+    Route::get('students/filters', [StudentManagementController::class, 'getFilters']);
+    Route::get('students/{studentId}', [StudentManagementController::class, 'show']);
+
+    // Withdrawal routes
+    Route::get('balance', [MentorWithdrawalController::class, 'getBalance']);
+    Route::get('income-statistics', [MentorWithdrawalController::class, 'getIncomeStatistics']);
+    Route::post('withdrawal-request', [MentorWithdrawalController::class, 'requestWithdrawal']);
+    Route::get('withdrawal-history', [MentorWithdrawalController::class, 'getWithdrawalHistory']);
+
+    Route::prefix('courses/{courseId}/lessons')->group(function () {
+        Route::get('', [LessonController::class, 'index']);
+        Route::post('', [LessonController::class, 'store']);
+        Route::get('{id}', [LessonController::class, 'show']);
+        Route::put('{id}', [LessonController::class, 'update']);
+        Route::delete('{id}', [LessonController::class, 'destroy']);
+    });
 });
 
 // Admin only
@@ -79,17 +113,7 @@ Route::middleware(['auth:sanctum', 'checkRole:admin'])->group(function () {
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
 
     // Course routes
-    Route::apiResource('courses', CourseController::class);
-
-    // Lesson routes (nested under courses)
-    Route::prefix('courses/{courseId}/lessons')->group(function () {
-        Route::get('', [LessonController::class, 'index']);
-        Route::post('', [LessonController::class, 'store']);
-        Route::get('{id}', [LessonController::class, 'show']);
-        Route::put('{id}', [LessonController::class, 'update']);
-        Route::delete('{id}', [LessonController::class, 'destroy']);
-    });
-
+    Route::apiResource('courses', CourseController::class)->except(['index', 'show']);
     // Course Mentor Application routes
     Route::get('course-mentor-applications', [CourseMentorApplicationController::class, 'index']);
     Route::put('course-mentor-applications/{id}/status', [CourseMentorApplicationController::class, 'updateStatus']);
@@ -105,4 +129,10 @@ Route::middleware(['auth:sanctum', 'checkRole:admin'])->group(function () {
     Route::put('revenue-share', [RevenueShareController::class, 'updateRevenueShare']);
 
     Route::get('admin/leaderboard/top-learners', [LeaderboardController::class, 'topLearners']);
+
+    // Withdrawal management routes
+    Route::get('withdrawals', [AdminWithdrawalController::class, 'index']);
+    Route::get('withdrawals/statistics', [AdminWithdrawalController::class, 'getStatistics']);
+    Route::post('withdrawals/{id}/approve', [AdminWithdrawalController::class, 'approve']);
+    Route::post('withdrawals/{id}/reject', [AdminWithdrawalController::class, 'reject']);
 });
