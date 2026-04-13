@@ -2,23 +2,37 @@
 
 namespace App\Http\Controllers\Mentor;
 
-use App\Http\Controllers\Controller;
 use App\Helpers\BaseResponse;
-use App\Http\Requests\Quiz\QuizRequest;
-use App\Http\Requests\Quiz\MCQQuestionsRequest;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Quiz\MatchingQuestionsRequest;
-use App\Models\Quiz;
+use App\Http\Requests\Quiz\MCQQuestionsRequest;
+use App\Http\Requests\Quiz\QuizRequest;
 use App\Models\Course;
+use App\Models\Quiz;
+use App\Repositories\Master\CourseRepository;
+use App\Repositories\Quiz\QuizMatchingRepository;
+use App\Repositories\Quiz\QuizQuestionRepository;
 use App\Repositories\Quiz\QuizRepository;
 use Illuminate\Http\Request;
 
 class QuizManagementController extends Controller
 {
     private $quizRepo;
+    private $courseRepo;
+    private $quizMatchingRepo;
+    private $quizQuestionRepo;
 
-    public function __construct(QuizRepository $quizRepo)
+    public function __construct(
+        QuizRepository $quizRepo,
+        CourseRepository $courseRepo,
+        QuizMatchingRepository $quizMatchingRepo,
+        QuizQuestionRepository $quizQuestionRepo
+        )
     {
         $this->quizRepo = $quizRepo;
+        $this->courseRepo = $courseRepo;
+        $this->quizMatchingRepo = $quizMatchingRepo;
+        $this->quizQuestionRepo = $quizQuestionRepo;
     }
 
     /**
@@ -29,8 +43,7 @@ class QuizManagementController extends Controller
         try {
             $mentorId = auth()->id();
 
-            // Verify mentor owns this course
-            $course = Course::find($request->input('course_id'));
+            $course = $this->courseRepo->find($request->input('course_id'));
             if (!$course || $course->user_id !== $mentorId) {
                 return BaseResponse::Error('Unauthorized course access', 403);
             }
@@ -50,13 +63,12 @@ class QuizManagementController extends Controller
     {
         $mentorId = auth()->id();
 
-        $quiz = Quiz::with(['course', 'lesson', 'questions.options', 'matchings'])->find($quizId);
+        $quiz = $this->quizRepo->quizWithCourseAndLesson($quizId);
 
         if (!$quiz) {
             return BaseResponse::Error('Quiz not found', 404);
         }
 
-        // Verify mentor owns this quiz
         if ($quiz->course->user_id !== $mentorId) {
             return BaseResponse::Error('Unauthorized quiz access', 403);
         }
@@ -71,13 +83,12 @@ class QuizManagementController extends Controller
     {
         try {
             $mentorId = auth()->id();
-            $quiz = Quiz::find($quizId);
+            $quiz = $this->quizRepo->find($quizId);
 
             if (!$quiz) {
                 return BaseResponse::Error('Quiz not found', 404);
             }
 
-            // Verify mentor owns this quiz
             if ($quiz->course->user_id !== $mentorId) {
                 return BaseResponse::Error('Unauthorized quiz access', 403);
             }
@@ -97,13 +108,12 @@ class QuizManagementController extends Controller
     {
         try {
             $mentorId = auth()->id();
-            $quiz = Quiz::find($quizId);
+            $quiz = $this->quizRepo->find($quizId);
 
             if (!$quiz) {
                 return BaseResponse::Error('Quiz not found', 404);
             }
 
-            // Verify mentor owns this quiz
             if ($quiz->course->user_id !== $mentorId) {
                 return BaseResponse::Error('Unauthorized quiz access', 403);
             }
@@ -123,18 +133,16 @@ class QuizManagementController extends Controller
     {
         try {
             $mentorId = auth()->id();
-            $quiz = Quiz::find($quizId);
+            $quiz = $this->quizRepo->find($quizId);
 
             if (!$quiz) {
                 return BaseResponse::Error('Quiz not found', 404);
             }
 
-            // Verify mentor owns this quiz
             if ($quiz->course->user_id !== $mentorId) {
                 return BaseResponse::Error('Unauthorized quiz access', 403);
             }
 
-            // Verify quiz type is MCQ
             if ($quiz->type !== 'MCQ') {
                 return BaseResponse::Error('This quiz is not MCQ type', 400);
             }
@@ -157,18 +165,16 @@ class QuizManagementController extends Controller
     {
         try {
             $mentorId = auth()->id();
-            $quiz = Quiz::find($quizId);
+            $quiz = $this->quizRepo->find($quizId);
 
             if (!$quiz) {
                 return BaseResponse::Error('Quiz not found', 404);
             }
 
-            // Verify mentor owns this quiz
             if ($quiz->course->user_id !== $mentorId) {
                 return BaseResponse::Error('Unauthorized quiz access', 403);
             }
 
-            // Verify quiz type is Matching
             if ($quiz->type !== 'Matching') {
                 return BaseResponse::Error('This quiz is not Matching type', 400);
             }
@@ -192,14 +198,13 @@ class QuizManagementController extends Controller
         try {
             $mentorId = auth()->id();
 
-            $question = \App\Models\QuizQuestion::find($questionId);
+            $question = $this->quizQuestionRepo->find($questionId);
             if (!$question) {
                 return BaseResponse::Error('Question not found', 404);
             }
 
             $quiz = $question->quiz;
 
-            // Verify mentor owns this quiz
             if ($quiz->course->user_id !== $mentorId) {
                 return BaseResponse::Error('Unauthorized access', 403);
             }
@@ -220,14 +225,13 @@ class QuizManagementController extends Controller
         try {
             $mentorId = auth()->id();
 
-            $matching = \App\Models\QuizMatching::find($matchingId);
+            $matching = $this->quizMatchingRepo->find($matchingId);
             if (!$matching) {
                 return BaseResponse::Error('Matching pair not found', 404);
             }
 
             $quiz = $matching->quiz;
 
-            // Verify mentor owns this quiz
             if ($quiz->course->user_id !== $mentorId) {
                 return BaseResponse::Error('Unauthorized access', 403);
             }
@@ -247,7 +251,7 @@ class QuizManagementController extends Controller
     {
         $mentorId = auth()->id();
 
-        $course = Course::find($courseId);
+        $course = $this->courseRepo->find($courseId);
         if (!$course || $course->user_id !== $mentorId) {
             return BaseResponse::Error('Unauthorized course access', 403);
         }

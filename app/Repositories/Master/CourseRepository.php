@@ -50,6 +50,11 @@ class CourseRepository
         return $this->model->create($data);
     }
 
+    public function find($id)
+    {
+        return $this->model->find($id);
+    }
+
     public function update($id, array $data)
     {
         $course = $this->model->find($id);
