@@ -8,12 +8,14 @@ use App\Http\Controllers\Master\LessonController;
 use App\Http\Controllers\Master\User\UserController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PaymentCallbackController;
+use App\Http\Controllers\Api\AiController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 Route::post('midtrans/callback', [PaymentCallbackController::class, 'callback']);
+Route::post('ai/chat', [AiController::class, 'chat']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
