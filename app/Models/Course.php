@@ -65,4 +65,9 @@ class Course extends Model
     {
         return $this->hasMany(Certificate::class);
     }
+
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
 }
