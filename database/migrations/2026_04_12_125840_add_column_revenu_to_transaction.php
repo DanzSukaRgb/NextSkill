@@ -13,7 +13,7 @@ return new class extends Migration
     {
         if(!Schema::hasColumn('transactions', 'mentor_revenue')) {
             Schema::table('transactions', function (Blueprint $table) {
-                $table->decimal('mentor_revenue', 15, 2)->default(0)->after('amount');
+                $table->decimal('mentor_revenue', 15, 2)->default(0)->after('gross_amount');
             });
         }
 
