@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\PaymentCallbackController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\QuizController;
+use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\CourseMentorApplicationController;
 use App\Http\Controllers\Master\CategoryController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Master\CourseController;
 use App\Http\Controllers\Master\LessonController;
 use App\Http\Controllers\Master\User\UserController;
 use App\Http\Controllers\Mentor\QuizManagementController;
+use App\Http\Controllers\Mentor\TaskManagementController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -33,6 +35,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('quizzes/{quizId}/submit', [QuizController::class, 'submitAnswers']);
     Route::get('quizzes/{quizId}/attempts', [QuizController::class, 'getAttempts']);
     Route::get('quiz-attempts/{attemptId}/result', [QuizController::class, 'getResult']);
+
+    Route::get('tasks/{taskId}', [TaskController::class, 'show']);
+    Route::get('courses/{courseId}/tasks', [TaskController::class, 'getTasksByCourse']);
+    Route::post('tasks/{taskId}/submit', [TaskController::class, 'submit']);
+    Route::post('tasks/{taskId}/save-draft', [TaskController::class, 'saveDraft']);
+    Route::get('submissions/my-submissions', [TaskController::class, 'mySubmissions']);
 });
 
 // Mentor only
@@ -53,6 +61,13 @@ Route::middleware(['auth:sanctum', 'checkRole:mentor'])->group(function () {
 
     Route::post('quizzes/{quizId}/questions/matching', [QuizManagementController::class, 'addMatchingPairs']);
     Route::delete('matchings/{matchingId}', [QuizManagementController::class, 'deleteMatchingPair']);
+
+    Route::post('tasks', [TaskManagementController::class, 'store']);
+    Route::put('tasks/{taskId}', [TaskManagementController::class, 'update']);
+    Route::delete('tasks/{taskId}', [TaskManagementController::class, 'destroy']);
+    Route::get('tasks/{taskId}/manage', [TaskManagementController::class, 'show']);
+    Route::get('courses/{courseId}/tasks/manage', [TaskManagementController::class, 'tasksByCourse']);
+    Route::put('task-submissions/{submissionId}/grade', [TaskManagementController::class, 'gradeSubmission']);
 });
 
 // Admin only
