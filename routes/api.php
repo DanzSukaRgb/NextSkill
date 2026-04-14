@@ -62,6 +62,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('lessons/{lessonId}/mark-complete', [LessonProgressController::class, 'markComplete']);
     Route::get('lessons/{lessonId}/progress', [LessonProgressController::class, 'getProgress']);
+    Route::get('courses/{courseId}/lessons', [LessonController::class, 'index']);
+
 });
 
 // Mentor only
@@ -101,7 +103,6 @@ Route::middleware(['auth:sanctum', 'checkRole:mentor'])->group(function () {
     Route::get('withdrawal-history', [MentorWithdrawalController::class, 'getWithdrawalHistory']);
 
     Route::prefix('courses/{courseId}/lessons')->group(function () {
-        Route::get('', [LessonController::class, 'index']);
         Route::post('', [LessonController::class, 'store']);
         Route::get('{id}', [LessonController::class, 'show']);
         Route::put('{id}', [LessonController::class, 'update']);
