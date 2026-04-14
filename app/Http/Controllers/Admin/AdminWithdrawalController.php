@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\BaseResponse;
+use App\Helpers\PaginationHelper;
 use App\Http\Controllers\Controller;
 use App\Models\MentorBalance;
 use App\Models\WithdrawalRequest;
@@ -16,6 +17,8 @@ class AdminWithdrawalController extends Controller
     public function index(Request $request)
     {
         try {
+            $perPage = $request->query('per_page', 10);
+            
             $query = WithdrawalRequest::with(['user', 'approver']);
 
             // Filter by status
@@ -28,9 +31,9 @@ class AdminWithdrawalController extends Controller
                 $query->where('user_id', $request->mentor_id);
             }
 
-            $withdrawals = $query->orderBy('requested_at', 'desc')->get();
+            $withdrawals = $query->orderBy('requested_at', 'desc')->paginate($perPage);
 
-            $data = $withdrawals->map(function ($withdrawal) {
+            $data = $withdrawals->getCollection()->map(function ($withdrawal) {
                 return [
                     'id' => $withdrawal->id,
                     'mentor_id' => $withdrawal->user->id,
@@ -59,7 +62,10 @@ class AdminWithdrawalController extends Controller
                 ];
             });
 
-            return BaseResponse::Success('Daftar penarikan berhasil diambil', ['withdrawals' => $data]);
+            return BaseResponse::Success('Daftar penarikan berhasil diambil', [
+                'withdrawals' => $data,
+                'pagination' => PaginationHelper::paginate($withdrawals),
+            ]);
         } catch (\Exception $e) {
             return BaseResponse::Error('Gagal mengambil daftar penarikan: ' . $e->getMessage(), 500);
         }
