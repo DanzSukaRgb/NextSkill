@@ -88,6 +88,7 @@ class QuizRepository
                 $q = QuizQuestion::create([
                     'quiz_id' => $quizId,
                     'question' => $question['question'],
+                    'question_type' => 'multiple_choice',
                     'order_number' => $index + 1,
                 ]);
 
