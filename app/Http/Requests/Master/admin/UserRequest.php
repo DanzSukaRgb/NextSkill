@@ -22,7 +22,7 @@ class UserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->route('user') ?? null;
+        $userId = $this->route('id') ?? null;
 
         return [
             'name' => 'required|string|max:255',
