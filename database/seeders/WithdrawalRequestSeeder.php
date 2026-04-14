@@ -20,7 +20,7 @@ class WithdrawalRequestSeeder extends Seeder
             $existingWithdrawals = [
                 [
                     'amount' => 1000000,
-                    'withdrawal_method' => 'bank_transfer',
+                    'withdrawal_method' => 'bank',
                     'bank_name' => 'BCA',
                     'account_number' => '1234567890',
                     'account_holder_name' => 'Mentor Profesional',
@@ -33,7 +33,7 @@ class WithdrawalRequestSeeder extends Seeder
                 ],
                 [
                     'amount' => 1000000,
-                    'withdrawal_method' => 'bank_transfer',
+                    'withdrawal_method' => 'bank',
                     'bank_name' => 'BCA',
                     'account_number' => '1234567890',
                     'account_holder_name' => 'Mentor Profesional',
@@ -59,7 +59,7 @@ class WithdrawalRequestSeeder extends Seeder
                 ],
                 [
                     'amount' => 1000000,
-                    'withdrawal_method' => 'bank_transfer',
+                    'withdrawal_method' => 'bank',
                     'bank_name' => 'BCA',
                     'account_number' => '1234567890',
                     'account_holder_name' => 'Mentor Profesional',
@@ -89,7 +89,7 @@ class WithdrawalRequestSeeder extends Seeder
                 'withdrawals' => [
                     [
                         'amount' => 1000000,
-                        'withdrawal_method' => 'bank_transfer',
+                        'withdrawal_method' => 'bank',
                         'bank_name' => 'BCA',
                         'account_number' => '1234567890',
                         'account_holder_name' => 'Budi Santoso',
@@ -102,7 +102,7 @@ class WithdrawalRequestSeeder extends Seeder
                     ],
                     [
                         'amount' => 1000000,
-                        'withdrawal_method' => 'bank_transfer',
+                        'withdrawal_method' => 'bank',
                         'bank_name' => 'BCA',
                         'account_number' => '1234567890',
                         'account_holder_name' => 'Budi Santoso',
@@ -113,7 +113,7 @@ class WithdrawalRequestSeeder extends Seeder
                         'approved_at' => null,
                         'approved_by' => null,
                     ],
-                ]
+                ],
             ],
             [
                 'name' => 'Mentor Siti Nurhaliza',
@@ -146,7 +146,7 @@ class WithdrawalRequestSeeder extends Seeder
                         'approved_at' => null,
                         'approved_by' => null,
                     ],
-                ]
+                ],
             ],
             [
                 'name' => 'Mentor Ahmad Rizki',
@@ -155,7 +155,7 @@ class WithdrawalRequestSeeder extends Seeder
                 'withdrawals' => [
                     [
                         'amount' => 2000000,
-                        'withdrawal_method' => 'bank_transfer',
+                        'withdrawal_method' => 'bank',
                         'bank_name' => 'Mandiri',
                         'account_number' => '9876543210',
                         'account_holder_name' => 'Ahmad Rizki',
@@ -168,7 +168,7 @@ class WithdrawalRequestSeeder extends Seeder
                     ],
                     [
                         'amount' => 1500000,
-                        'withdrawal_method' => 'bank_transfer',
+                        'withdrawal_method' => 'bank',
                         'bank_name' => 'Mandiri',
                         'account_number' => '9876543210',
                         'account_holder_name' => 'Ahmad Rizki',
@@ -179,7 +179,7 @@ class WithdrawalRequestSeeder extends Seeder
                         'approved_at' => null,
                         'approved_by' => null,
                     ],
-                ]
+                ],
             ],
             [
                 'name' => 'Mentor Dewi Lestari',
@@ -212,7 +212,7 @@ class WithdrawalRequestSeeder extends Seeder
                         'approved_at' => null,
                         'approved_by' => null,
                     ],
-                ]
+                ],
             ],
             [
                 'name' => 'Mentor Riko Hermawan',
@@ -221,8 +221,8 @@ class WithdrawalRequestSeeder extends Seeder
                 'withdrawals' => [
                     [
                         'amount' => 1800000,
-                        'withdrawal_method' => 'bank_transfer',
-                        'bank_name' => 'BNI',
+                        'withdrawal_method' => 'bank',
+                        'bank_name' => 'BRI',
                         'account_number' => '5555666677',
                         'account_holder_name' => 'Riko Hermawan',
                         'e_wallet_type' => null,
@@ -234,8 +234,8 @@ class WithdrawalRequestSeeder extends Seeder
                     ],
                     [
                         'amount' => 1200000,
-                        'withdrawal_method' => 'bank_transfer',
-                        'bank_name' => 'BNI',
+                        'withdrawal_method' => 'bank',
+                        'bank_name' => 'BRI',
                         'account_number' => '5555666677',
                         'account_holder_name' => 'Riko Hermawan',
                         'e_wallet_type' => null,
@@ -245,7 +245,7 @@ class WithdrawalRequestSeeder extends Seeder
                         'approved_at' => null,
                         'approved_by' => null,
                     ],
-                ]
+                ],
             ],
         ];
 
