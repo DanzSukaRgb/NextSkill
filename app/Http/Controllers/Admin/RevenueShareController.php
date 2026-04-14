@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Helpers\BaseResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\payment\RevenueShareRequest;
+use App\Http\Requests\Payment\RevenueShareRequest;
 use App\Repositories\Payment\RevenueShareRepository;
 use App\Services\Payment\RevenueShareService;
 // use Illuminate\Http\Request;
