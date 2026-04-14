@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('courses', [CourseController::class, 'index']);
     Route::get('courses/no-mentor', [CourseController::class, 'listNoMentor'])->middleware('checkRole:mentor');
+    Route::get('courses/active-by-mentor', [CourseController::class, 'listCourseActiveByMentor'])->middleware('checkRole:mentor');
     Route::get('courses/{id}', [CourseController::class, 'show']);
 
     Route::get('leaderboard/top-learners', [LeaderboardController::class, 'topLearners']);
@@ -63,7 +64,6 @@ Route::middleware('auth:sanctum')->group(function () {
 // Mentor only
 Route::middleware(['auth:sanctum', 'checkRole:mentor'])->group(function () {
     Route::post('courses/{courseId}/apply-mentor', [CourseMentorApplicationController::class, 'apply']);
-    Route::get('courses/active-by-mentor', [CourseController::class, 'listCourseActiveByMentor']);
     Route::get('course-mentor-applications/pending', [CourseMentorApplicationController::class, 'listMentorApplyPending']);
 
     Route::post('quizzes', [QuizManagementController::class, 'store']);
