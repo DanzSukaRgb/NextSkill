@@ -127,6 +127,7 @@ Route::middleware(['auth:sanctum', 'checkRole:admin'])->group(function () {
     Route::get('transactions', [TransactionController::class, 'index']);
     Route::get('transactions/{id}', [TransactionController::class, 'show']);
     Route::put('revenue-share', [RevenueShareController::class, 'updateRevenueShare']);
+    Route::get('revenue-share', [RevenueShareController::class, 'getCurrentRevenueShare']);
 
     Route::get('admin/leaderboard/top-learners', [LeaderboardController::class, 'topLearners']);
 

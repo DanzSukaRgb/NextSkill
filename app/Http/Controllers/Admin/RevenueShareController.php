@@ -30,4 +30,15 @@ class RevenueShareController extends Controller
 
         return BaseResponse::success('Revenue share berhasil diperbarui', $updated);
     }
+
+    public function getCurrentRevenueShare()
+    {
+        $current = $this->repo->getCurrent();
+
+        if (!$current) {
+            return BaseResponse::error('Data revenue share tidak ditemukan', 404);
+        }
+
+        return BaseResponse::success('Data revenue share saat ini', $current);
+    }
 }
