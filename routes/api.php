@@ -83,6 +83,7 @@ Route::middleware(['auth:sanctum', 'checkRole:mentor'])->group(function () {
     Route::delete('tasks/{taskId}', [TaskManagementController::class, 'destroy']);
     Route::get('tasks/{taskId}/manage', [TaskManagementController::class, 'show']);
     Route::get('courses/{courseId}/tasks/manage', [TaskManagementController::class, 'tasksByCourse']);
+    Route::get('mentor/courses-pending-tasks', [TaskManagementController::class, 'getMentorCoursesPendingTasks']);
     Route::put('task-submissions/{submissionId}/grade', [TaskManagementController::class, 'gradeSubmission']);
 
     Route::get('students', [StudentManagementController::class, 'index']);

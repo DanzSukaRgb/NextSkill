@@ -229,5 +229,41 @@ class TaskManagementController extends Controller
         }
     }
 
+    /**
+     * Get mentor courses with pending tasks count
+     */
+    public function getMentorCoursesPendingTasks()
+    {
+        try {
+            $mentorId = auth()->id();
+
+            // Get all courses owned by this mentor
+            $courses = Course::where('user_id', $mentorId)
+                ->with(['tasks.submissions'])
+                ->get();
+
+            $coursesData = $courses->map(function ($course) {
+                $totalTasks = $course->tasks->count();
+                $pendingTasks = 0;
+
+                foreach ($course->tasks as $task) {
+                    $pendingCount = $task->submissions->where('status', 'submitted')->count();
+                    $pendingTasks += $pendingCount;
+                }
+
+                return [
+                    'id' => $course->id,
+                    'course_name' => $course->title,
+                    'total_tasks' => $totalTasks,
+                    'pending_grading' => $pendingTasks,
+                ];
+            });
+
+            return BaseResponse::Success('Daftar course dengan tugas yang perlu dinilai', $coursesData);
+        } catch (\Exception $e) {
+            return BaseResponse::Error('Gagal mengambil daftar course: ' . $e->getMessage(), 500);
+        }
+    }
+
 
 }
