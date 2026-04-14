@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\StudentCourseController;
 use App\Http\Controllers\Api\LessonProgressController;
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\CourseMentorApplicationController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Master\CategoryController;
 use App\Http\Controllers\Master\CourseController;
 use App\Http\Controllers\Master\LessonController;
@@ -30,6 +31,7 @@ Route::post('midtrans/callback', [PaymentCallbackController::class, 'callback'])
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::get('dashboard', [DashboardController::class, 'index']);
     Route::put('users/{id}', [UserController::class, 'update']);
     Route::get('categories', [CategoryController::class, 'index']);
     Route::post('checkout', [PaymentController::class, 'checkout']);
