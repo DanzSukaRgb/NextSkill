@@ -134,6 +134,12 @@ class TaskController extends Controller
                 return BaseResponse::Error('Anda tidak terdaftar di kursus ini', 403);
             }
 
+            // Check if student already submitted this task (only 1 submission allowed)
+            $existingSubmission = $this->taskSubmissionRepo->getByTaskAndUser($taskId, $userId);
+            if ($existingSubmission && $existingSubmission->status !== 'draft') {
+                return BaseResponse::Error('Anda sudah mengumpulkan task ini. Hanya bisa dikumpulkan sekali.', 400);
+            }
+
             $submissionData = $request->validated();
             $submissionData['submitted_at'] = now();
             $submissionData['status'] = 'submitted';

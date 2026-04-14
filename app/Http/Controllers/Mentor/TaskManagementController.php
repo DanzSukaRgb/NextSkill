@@ -239,22 +239,31 @@ class TaskManagementController extends Controller
 
             // Get all courses owned by this mentor
             $courses = Course::where('user_id', $mentorId)
-                ->with(['tasks.submissions'])
+                ->with(['tasks.submissions.user'])
                 ->get();
 
             $coursesData = $courses->map(function ($course) {
                 $totalTasks = $course->tasks->count();
                 $pendingTasks = 0;
+                $totalStudents = collect();
+                $pendingStudents = collect();
 
                 foreach ($course->tasks as $task) {
-                    $pendingCount = $task->submissions->where('status', 'submitted')->count();
-                    $pendingTasks += $pendingCount;
+                    foreach ($task->submissions as $submission) {
+                        $totalStudents->push($submission->user_id);
+                        if ($submission->status === 'submitted') {
+                            $pendingTasks++;
+                            $pendingStudents->push($submission->user_id);
+                        }
+                    }
                 }
 
                 return [
                     'id' => $course->id,
                     'course_name' => $course->title,
                     'total_tasks' => $totalTasks,
+                    'total_students_submitted' => $totalStudents->unique()->count(),
+                    'students_pending_grading' => $pendingStudents->unique()->count(),
                     'pending_grading' => $pendingTasks,
                 ];
             });
@@ -262,6 +271,67 @@ class TaskManagementController extends Controller
             return BaseResponse::Success('Daftar course dengan tugas yang perlu dinilai', $coursesData);
         } catch (\Exception $e) {
             return BaseResponse::Error('Gagal mengambil daftar course: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get student submissions by course with filters and search
+     */
+    public function getStudentSubmissionsByCourse(Request $request, $courseId)
+    {
+        try {
+            $mentorId = auth()->id();
+            $course = Course::find($courseId);
+
+            if (!$course) {
+                return BaseResponse::Error('Kursus tidak ditemukan', 404);
+            }
+
+            if ($course->user_id !== $mentorId) {
+                return BaseResponse::Error('Anda tidak berhak melihat course ini', 403);
+            }
+
+            $status = $request->query('status'); // 'pending', 'graded', atau null (semua)
+            $search = $request->query('search'); // search nama siswa
+
+            // Get all tasks for this course with submissions
+            $tasks = $course->tasks()->with('submissions.user')->get();
+
+            $submissions = collect();
+            foreach ($tasks as $task) {
+                foreach ($task->submissions as $submission) {
+                    $submissions->push([
+                        'submission_id' => $submission->id,
+                        'student_name' => $submission->user->name,
+                        'student_id' => $submission->user->id,
+                        'task_title' => $task->title,
+                        'course_name' => $course->title,
+                        'submitted_at' => $submission->submitted_at,
+                        'status' => $submission->status,
+                        'score' => $submission->score,
+                        'feedback' => $submission->feedback,
+                    ]);
+                }
+            }
+
+            // Filter by status
+            if ($status) {
+                $submissions = $submissions->where('status', $status);
+            }
+
+            // Search by student name
+            if ($search) {
+                $submissions = $submissions->filter(function ($item) use ($search) {
+                    return stripos($item['student_name'], $search) !== false;
+                });
+            }
+
+            // Sort by submitted_at descending
+            $submissions = $submissions->sortByDesc('submitted_at')->values();
+
+            return BaseResponse::Success('Daftar submission siswa berhasil diambil', $submissions);
+        } catch (\Exception $e) {
+            return BaseResponse::Error('Gagal mengambil daftar submission: ' . $e->getMessage(), 500);
         }
     }
 
