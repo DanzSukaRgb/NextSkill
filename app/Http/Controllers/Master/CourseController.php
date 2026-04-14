@@ -35,6 +35,7 @@ class CourseController extends Controller
             'search',
             'category_id',
             'status',
+            'mentor'
         ]);
         $courses = $this->repo->paginate($payload, $perPage, $page);
         return BaseResponse::success('Daftar kursus', [

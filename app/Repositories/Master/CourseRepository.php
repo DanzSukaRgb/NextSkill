@@ -36,6 +36,12 @@ class CourseRepository
             $model->where('status', $data['status']);
         }
 
+        if(isset($data['mentor'])) {
+            $model->whereHas('user', function($query) use ($data) {
+                $query->where('name', 'like', '%' . $data['mentor'] . '%');
+            });
+        }
+
         $model->orderBy('created_at', 'desc');
         return $model->paginate($perPage, ['*'], 'page', $page);
     }
