@@ -36,10 +36,27 @@ class CourseRepository
             $model->where('status', $data['status']);
         }
 
-        if(isset($data['mentor'])) {
-            $model->whereHas('user', function($query) use ($data) {
-                $query->where('name', 'like', '%' . $data['mentor'] . '%');
-            });
+        $model->orderBy('created_at', 'desc');
+        return $model->paginate($perPage, ['*'], 'page', $page);
+    }
+
+    public function paginateByMentor(?array $data, int $perPage = 5, int $page = 1)
+    {
+        $data = $data ?? [];
+        $model = $this->model->query()
+            ->with('category:id,name', 'user:id,name,avatar')
+            ->whereNotNull('user_id');
+
+        if (isset($data['search'])) {
+            $model->where('title', 'like', '%' . $data['search'] . '%');
+        }
+
+        if (isset($data['category_id'])) {
+            $model->where('category_id', $data['category_id']);
+        }
+
+        if (isset($data['status'])) {
+            $model->where('status', $data['status']);
         }
 
         $model->orderBy('created_at', 'desc');

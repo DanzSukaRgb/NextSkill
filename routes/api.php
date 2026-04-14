@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('checkout', [PaymentController::class, 'checkout']);
 
     Route::get('courses', [CourseController::class, 'index']);
+    Route::get('courses/mentor-active', [CourseController::class, 'indexByMentor']);
     Route::get('courses/no-mentor', [CourseController::class, 'listNoMentor'])->middleware('checkRole:mentor');
     Route::get('courses/active-by-mentor', [CourseController::class, 'listCourseActiveByMentor'])->middleware('checkRole:mentor');
     Route::get('courses/{id}', [CourseController::class, 'show']);

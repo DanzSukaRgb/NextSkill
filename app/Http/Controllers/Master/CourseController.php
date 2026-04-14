@@ -35,9 +35,23 @@ class CourseController extends Controller
             'search',
             'category_id',
             'status',
-            'mentor'
         ]);
         $courses = $this->repo->paginate($payload, $perPage, $page);
+        return BaseResponse::success('Daftar kursus', [
+            'data' => CourseResource::collection($courses),
+            'pagination' => PaginationHelper::paginate($courses),
+        ]);
+    }
+    public function indexByMentor(Request $request)
+    {
+        $perPage = $request->perPage ?? 5;
+        $page = $request->page ?? 1;
+        $payload = $request->only([
+            'search',
+            'category_id',
+            'status',
+        ]);
+        $courses = $this->repo->paginateByMentor($payload, $perPage, $page);
         return BaseResponse::success('Daftar kursus', [
             'data' => CourseResource::collection($courses),
             'pagination' => PaginationHelper::paginate($courses),
