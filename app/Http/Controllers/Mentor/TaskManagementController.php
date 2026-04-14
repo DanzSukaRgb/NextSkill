@@ -155,7 +155,7 @@ class TaskManagementController extends Controller
 
             $this->taskRepo->delete($taskId);
 
-            return BaseResponse::Success('Task berhasil dihapus');
+            return BaseResponse::Success('Task berhasil dihapus', null);
         } catch (\Exception $e) {
             return BaseResponse::Error('Gagal menghapus task: ' . $e->getMessage(), 500);
         }

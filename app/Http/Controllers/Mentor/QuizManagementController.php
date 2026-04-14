@@ -27,8 +27,7 @@ class QuizManagementController extends Controller
         CourseRepository $courseRepo,
         QuizMatchingRepository $quizMatchingRepo,
         QuizQuestionRepository $quizQuestionRepo
-        )
-    {
+    ) {
         $this->quizRepo = $quizRepo;
         $this->courseRepo = $courseRepo;
         $this->quizMatchingRepo = $quizMatchingRepo;
@@ -48,10 +47,13 @@ class QuizManagementController extends Controller
                 return BaseResponse::Error('Unauthorized course access', 403);
             }
 
+            DB::beginTransaction();
             $quiz = $this->quizRepo->create($request->validated());
+            DB::commit();
 
             return BaseResponse::Success('Quiz created successfully', $quiz, 201);
         } catch (\Exception $e) {
+            DB::rollback();
             return BaseResponse::Error('Failed to create quiz: ' . $e->getMessage(), 500);
         }
     }
@@ -83,7 +85,7 @@ class QuizManagementController extends Controller
     {
         try {
             $mentorId = auth()->id();
-            $quiz = $this->quizRepo->find($quizId);
+            $quiz = $this->quizRepo->quizWithCourseAndLesson($quizId);
 
             if (!$quiz) {
                 return BaseResponse::Error('Quiz not found', 404);
@@ -108,7 +110,7 @@ class QuizManagementController extends Controller
     {
         try {
             $mentorId = auth()->id();
-            $quiz = $this->quizRepo->find($quizId);
+            $quiz = $this->quizRepo->quizWithCourseAndLesson($quizId);
 
             if (!$quiz) {
                 return BaseResponse::Error('Quiz not found', 404);
@@ -120,7 +122,7 @@ class QuizManagementController extends Controller
 
             $this->quizRepo->delete($quizId);
 
-            return BaseResponse::Success('Quiz deleted successfully');
+            return BaseResponse::Success('Quiz deleted successfully', null);
         } catch (\Exception $e) {
             return BaseResponse::Error('Failed to delete quiz: ' . $e->getMessage(), 500);
         }
@@ -133,7 +135,7 @@ class QuizManagementController extends Controller
     {
         try {
             $mentorId = auth()->id();
-            $quiz = $this->quizRepo->find($quizId);
+            $quiz = $this->quizRepo->quizWithCourseAndLesson($quizId);
 
             if (!$quiz) {
                 return BaseResponse::Error('Quiz not found', 404);
@@ -165,7 +167,7 @@ class QuizManagementController extends Controller
     {
         try {
             $mentorId = auth()->id();
-            $quiz = $this->quizRepo->find($quizId);
+            $quiz = $this->quizRepo->quizWithCourseAndLesson($quizId);
 
             if (!$quiz) {
                 return BaseResponse::Error('Quiz not found', 404);
@@ -203,7 +205,7 @@ class QuizManagementController extends Controller
                 return BaseResponse::Error('Question not found', 404);
             }
 
-            $quiz = $question->quiz;
+            $quiz = $question->quiz()->with('course')->first();
 
             if ($quiz->course->user_id !== $mentorId) {
                 return BaseResponse::Error('Unauthorized access', 403);
@@ -211,7 +213,7 @@ class QuizManagementController extends Controller
 
             $this->quizRepo->deleteMCQQuestion($questionId);
 
-            return BaseResponse::Success('Question deleted successfully');
+            return BaseResponse::Success('Question deleted successfully', null);
         } catch (\Exception $e) {
             return BaseResponse::Error('Failed to delete question: ' . $e->getMessage(), 500);
         }
@@ -230,7 +232,7 @@ class QuizManagementController extends Controller
                 return BaseResponse::Error('Matching pair not found', 404);
             }
 
-            $quiz = $matching->quiz;
+            $quiz = $matching->quiz()->with('course')->first();
 
             if ($quiz->course->user_id !== $mentorId) {
                 return BaseResponse::Error('Unauthorized access', 403);
@@ -238,7 +240,7 @@ class QuizManagementController extends Controller
 
             $this->quizRepo->deleteMatchingQuestion($matchingId);
 
-            return BaseResponse::Success('Matching pair deleted successfully');
+            return BaseResponse::Success('Matching pair deleted successfully', null);
         } catch (\Exception $e) {
             return BaseResponse::Error('Failed to delete pair: ' . $e->getMessage(), 500);
         }
