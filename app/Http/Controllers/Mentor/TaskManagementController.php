@@ -250,7 +250,11 @@ class TaskManagementController extends Controller
 
                 foreach ($course->tasks as $task) {
                     foreach ($task->submissions as $submission) {
-                        $totalStudents->push($submission->user_id);
+                        // Only count submitted or graded, exclude draft
+                        if ($submission->status !== 'draft') {
+                            $totalStudents->push($submission->user_id);
+                        }
+
                         if ($submission->status === 'submitted') {
                             $pendingTasks++;
                             $pendingStudents->push($submission->user_id);
@@ -314,9 +318,11 @@ class TaskManagementController extends Controller
                 }
             }
 
-            // Filter by status
+            // Filter by status - map parameter to actual database status
+            // pending param → submitted status, graded param → graded status
             if ($status) {
-                $submissions = $submissions->where('status', $status);
+                $mappedStatus = $status === 'pending' ? 'submitted' : $status;
+                $submissions = $submissions->where('status', $mappedStatus);
             }
 
             // Search by student name
