@@ -14,6 +14,7 @@ use App\Repositories\Quiz\QuizMatchingRepository;
 use App\Repositories\Quiz\QuizQuestionRepository;
 use App\Repositories\Quiz\QuizRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class QuizManagementController extends Controller
 {
