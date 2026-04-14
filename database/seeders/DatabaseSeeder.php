@@ -45,6 +45,7 @@ class DatabaseSeeder extends Seeder
             // 8. Mentor-related data
             CourseMentorApplicationSeeder::class,
             MentorBalanceSeeder::class,
+            WithdrawalRequestSeeder::class,
 
             // 9. Payment & Transaction data
             TransactionSeeder::class,
