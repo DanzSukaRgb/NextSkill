@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -15,7 +15,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Fix courses table - convert full URLs to relative paths
+        // Step 1: Make image columns nullable first (so we can set them to NULL)
+        Schema::table('courses', function (Blueprint $table) {
+            $table->string('thumbnail')->nullable()->change();
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('avatar')->nullable()->change();
+        });
+
+        Schema::table('categories', function (Blueprint $table) {
+            $table->string('icon')->nullable()->change();
+        });
+
+        Schema::table('lessons', function (Blueprint $table) {
+            $table->string('file_path')->nullable()->change();
+        });
+
+        // Step 2: Fix courses table - convert full URLs to relative paths
         DB::statement("
             UPDATE courses
             SET thumbnail = CASE
@@ -25,7 +42,7 @@ return new class extends Migration
             WHERE thumbnail LIKE 'http://%' OR thumbnail LIKE 'https://%'
         ");
 
-        // Fix users table - convert full URLs to relative paths
+        // Step 3: Fix users table - convert full URLs to relative paths
         DB::statement("
             UPDATE users
             SET avatar = CASE
@@ -35,7 +52,7 @@ return new class extends Migration
             WHERE avatar LIKE 'http://%' OR avatar LIKE 'https://%'
         ");
 
-        // Fix categories table - convert full URLs to relative paths
+        // Step 4: Fix categories table - convert full URLs to relative paths
         DB::statement("
             UPDATE categories
             SET icon = CASE
@@ -45,7 +62,7 @@ return new class extends Migration
             WHERE icon LIKE 'http://%' OR icon LIKE 'https://%'
         ");
 
-        // Fix lessons table - convert full URLs to relative paths
+        // Step 5: Fix lessons table - convert full URLs to relative paths
         DB::statement("
             UPDATE lessons
             SET file_path = CASE
