@@ -15,6 +15,14 @@ class LessonResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $progress = null;
+        if (auth()->check()) {
+            $lessonProgress = \App\Models\LessonProgress::where('user_id', auth()->id())
+                ->where('lesson_id', $this->id)
+                ->first();
+            $progress = $lessonProgress && $lessonProgress->is_completed ? 100 : 0;
+        }
+
         return [
             'id' => $this->id,
             'course_id' => $this->course_id,
@@ -25,6 +33,7 @@ class LessonResource extends JsonResource
             'order_number' => $this->order_number,
             'duration_in_minutes' => $this->duration_in_minutes,
             'is_preview' => $this->is_preview,
+            'progress' => $progress,
             'quizzes' => $this->when(
                 $this->relationLoaded('quizzes'),
                 fn() => $this->quizzes->map(fn($quiz) => [

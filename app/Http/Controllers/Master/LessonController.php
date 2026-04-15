@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Master;
 
 use App\Helpers\BaseResponse;
-use App\Helpers\PaginationHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\LessonRequest;
 use App\Http\Resources\Master\LessonResource;
@@ -28,12 +27,8 @@ class LessonController extends Controller
      */
     public function index(Request $request, string $courseId)
     {
-        $perPage = $request->perPage ?? 10;
-        $page = $request->page ?? 1;
-        $payload = $request->only(['search']);
-
-        // Get paginated lessons with related quizzes
-        $lessons = $this->repo->paginateByCourseId($courseId, $payload, $perPage, $page);
+        // Get all lessons with related quizzes
+        $lessons = $this->repo->getByCourseId($courseId);
 
         // Get unrelated quizzes (no lesson_id)
         $unrelatedQuizzes = \App\Models\Quiz::where('course_id', $courseId)
@@ -52,7 +47,6 @@ class LessonController extends Controller
         return BaseResponse::success('Daftar lesson', [
             'data' => LessonResource::collection($lessons),
             'unrelated_quizzes' => $unrelatedQuizzes,
-            'pagination' => PaginationHelper::paginate($lessons),
         ]);
     }
 

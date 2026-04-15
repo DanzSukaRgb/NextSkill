@@ -16,6 +16,7 @@ class LessonRepository
     public function getByCourseId(string $courseId)
     {
         return $this->model->where('course_id', $courseId)
+            ->with('quizzes')
             ->orderBy('order_number', 'asc')
             ->get();
     }
