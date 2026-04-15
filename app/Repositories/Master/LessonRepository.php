@@ -23,7 +23,8 @@ class LessonRepository
     public function paginateByCourseId(string $courseId, ?array $data, int $perPage = 10, int $page = 1)
     {
         $data = $data ?? [];
-        $model = $this->model->where('course_id', $courseId);
+        $model = $this->model->where('course_id', $courseId)
+            ->with('quizzes');
 
         if (isset($data['search'])) {
             $model->where('title', 'like', '%' . $data['search'] . '%');

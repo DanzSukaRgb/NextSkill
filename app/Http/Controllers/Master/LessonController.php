@@ -31,10 +31,27 @@ class LessonController extends Controller
         $perPage = $request->perPage ?? 10;
         $page = $request->page ?? 1;
         $payload = $request->only(['search']);
+
+        // Get paginated lessons with related quizzes
         $lessons = $this->repo->paginateByCourseId($courseId, $payload, $perPage, $page);
+
+        // Get unrelated quizzes (no lesson_id)
+        $unrelatedQuizzes = \App\Models\Quiz::where('course_id', $courseId)
+            ->whereNull('lesson_id')
+            ->get()
+            ->map(fn($quiz) => [
+                'id' => $quiz->id,
+                'title' => $quiz->title,
+                'description' => $quiz->description,
+                'type' => $quiz->type,
+                'time_limit' => $quiz->time_limit,
+                'minimum_score' => $quiz->minimum_score,
+                'total_questions' => $quiz->total_questions,
+            ]);
 
         return BaseResponse::success('Daftar lesson', [
             'data' => LessonResource::collection($lessons),
+            'unrelated_quizzes' => $unrelatedQuizzes,
             'pagination' => PaginationHelper::paginate($lessons),
         ]);
     }

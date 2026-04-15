@@ -25,6 +25,18 @@ class LessonResource extends JsonResource
             'order_number' => $this->order_number,
             'duration_in_minutes' => $this->duration_in_minutes,
             'is_preview' => $this->is_preview,
+            'quizzes' => $this->when(
+                $this->relationLoaded('quizzes'),
+                fn() => $this->quizzes->map(fn($quiz) => [
+                    'id' => $quiz->id,
+                    'title' => $quiz->title,
+                    'description' => $quiz->description,
+                    'type' => $quiz->type,
+                    'time_limit' => $quiz->time_limit,
+                    'minimum_score' => $quiz->minimum_score,
+                    'total_questions' => $quiz->total_questions,
+                ])
+            ),
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];
