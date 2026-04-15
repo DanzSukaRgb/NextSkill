@@ -103,4 +103,25 @@ class QuizController extends Controller
             'submitted_at' => $attempt->submitted_at,
         ]);
     }
+
+    /**
+     * Get quizzes by course for student
+     */
+    public function getQuizzesByCourse($courseId)
+    {
+        $studentId = auth()->id();
+
+        // Check if student is enrolled in the course
+        $enrollment = \App\Models\Enrollment::where('user_id', $studentId)
+            ->where('course_id', $courseId)
+            ->first();
+
+        if (!$enrollment) {
+            return BaseResponse::Error('Anda belum terdaftar di kursus ini', 403);
+        }
+
+        $quizzes = $this->quizRepo->getByCourse($courseId);
+
+        return BaseResponse::Success('Kuis kursus berhasil diambil', $quizzes);
+    }
 }
