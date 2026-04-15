@@ -30,6 +30,15 @@ class LessonController extends Controller
         // Get all lessons with related quizzes
         $lessons = $this->repo->getByCourseId($courseId);
 
+        // Get course progress if user is authenticated and enrolled
+        $courseProgress = null;
+        if (auth()->check()) {
+            $enrollment = \App\Models\Enrollment::where('user_id', auth()->id())
+                ->where('course_id', $courseId)
+                ->first();
+            $courseProgress = $enrollment?->progress_percentage ?? 0;
+        }
+
         // Get unrelated quizzes (no lesson_id)
         $unrelatedQuizzes = \App\Models\Quiz::where('course_id', $courseId)
             ->whereNull('lesson_id')
@@ -46,6 +55,7 @@ class LessonController extends Controller
 
         return BaseResponse::success('Daftar lesson', [
             'data' => LessonResource::collection($lessons),
+            'course_progress' => $courseProgress,
             'unrelated_quizzes' => $unrelatedQuizzes,
         ]);
     }
