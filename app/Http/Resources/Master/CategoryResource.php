@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Master;
 
+use App\Helpers\ImageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,7 +19,7 @@ class CategoryResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'icon' => $this->icon ? asset('storage/' . $this->icon) : null,
+            'icon' => ImageHelper::getImageUrl($this->icon),
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
             'count_course' => $this->courses_count

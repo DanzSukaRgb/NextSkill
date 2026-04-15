@@ -108,7 +108,7 @@ class CourseSeeder extends Seeder
                 'user_id' => $mentor->id,
                 'title' => $courseData['title'],
                 'description' => $courseData['description'],
-                'thumbnail' => 'https://via.placeholder.com/400x300?text=' . urlencode($courseData['title']),
+                'thumbnail' => null, // Thumbnails should be uploaded by mentors, not hardcoded URLs
                 'level' => $courseData['level'],
                 'price' => $courseData['price'],
                 'status' => 'published',

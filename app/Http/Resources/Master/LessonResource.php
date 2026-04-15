@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Master;
 
+use App\Helpers\ImageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,7 +21,7 @@ class LessonResource extends JsonResource
             'title' => $this->title,
             'content' => $this->content,
             'vidio_url' => $this->vidio_url,
-            'file_path' => $this->file_path ? asset('storage/' . $this->file_path) : null,
+            'file_path' => ImageHelper::getImageUrl($this->file_path),
             'order_number' => $this->order_number,
             'duration_in_minutes' => $this->duration_in_minutes,
             'is_preview' => $this->is_preview,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Master;
 
+use App\Helpers\ImageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,7 +19,7 @@ class CourseResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'thumbnail' => $this->thumbnail ? asset('storage/' . $this->thumbnail) : null,
+            'thumbnail' => ImageHelper::getImageUrl($this->thumbnail),
             'category' => [
                 'id' => $this->category?->id,
                 'name' => $this->category?->name,
@@ -26,7 +27,7 @@ class CourseResource extends JsonResource
             'mentor' => $this->user ? [
                 'id' => $this->user->id,
                 'name' => $this->user->name,
-                'avatar' => $this->user->avatar ? asset('storage/' . $this->user->avatar) : null,
+                'avatar' => ImageHelper::getImageUrl($this->user->avatar),
             ] : null,
             'level' => $this->level,
             'status' => $this->status,
