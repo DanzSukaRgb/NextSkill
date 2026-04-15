@@ -15,6 +15,7 @@ class Transaction extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'id',
         'invoice_number',
         'user_id',
         'course_id',

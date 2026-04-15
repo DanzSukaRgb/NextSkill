@@ -128,7 +128,6 @@ class PaymentService
         $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
 
         if ($expectedSignature !== $signatureKey) {
-            Log::warning('Midtrans Invalid Signature Call', $payload);
             return ['status' => 'error', 'code' => 403, 'message' => 'Invalid signature'];
         }
 
@@ -137,13 +136,7 @@ class PaymentService
             return ['status' => 'error', 'code' => 404, 'message' => 'Transaction not found'];
         }
 
-        // BRUTAL CHECK: Ensure paid amount matches our records to prevent price manipulation
         if ((int) $grossAmount !== (int) $transaction->gross_amount) {
-            Log::critical('MIDTRANS PRICE MISMATCH DETECTED', [
-                'order_id' => $orderId,
-                'db_amount' => $transaction->gross_amount,
-                'paid_amount' => $grossAmount
-            ]);
             return ['status' => 'error', 'code' => 400, 'message' => 'Gross amount mismatch'];
         }
 
@@ -165,7 +158,6 @@ class PaymentService
         }
 
         if ($isSuccess && $transaction->status !== 'success') {
-            // Distribute revenue
             try {
                 $this->revenueShare($transaction);
             } catch (\Exception $e) {
@@ -183,8 +175,6 @@ class PaymentService
                 'status' => 'active',
                 'progress_percentage' => 0,
             ]);
-
-            Log::info('MIDTRANS SUCCESS: Payment confirmed for order ' . $orderId);
         }
 
         return ['status' => 'success', 'code' => 200, 'message' => 'Callback processed'];
@@ -220,16 +210,16 @@ class PaymentService
 
         $mentorUserId = $transaction->course->user_id;
 
-        MentorBalance::updateOrCreate(
+        // Update or create mentor balance, then increment
+        $mentorBalance = MentorBalance::firstOrCreate(
             ['user_id' => $mentorUserId],
-            ['balance' => DB::raw("balance + " . (float) $mentorShare)]
+            ['balance' => 0]
         );
+        $mentorBalance->increment('balance', (float) $mentorShare);
 
         $platformBalance = PlatformBalance::first();
         if ($platformBalance) {
-            $platformBalance->update([
-                'balance' => DB::raw("balance + " . (float) $platformShare)
-            ]);
+            $platformBalance->increment('balance', (float) $platformShare);
         }
 
         Log::info('Revenue distributed', [

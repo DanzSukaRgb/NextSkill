@@ -24,7 +24,7 @@ class PaymentController extends Controller
 
         if ($course->price <= 0) {
             $result = $this->paymentService->enrollFreeCourse($course, $user);
-            
+
             if ($result['status'] === 'error') {
                 return BaseResponse::Error($result['message'], $result['code']);
             }
