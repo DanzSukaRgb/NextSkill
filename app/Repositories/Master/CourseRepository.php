@@ -40,12 +40,22 @@ class CourseRepository
         return $model->paginate($perPage, ['*'], 'page', $page);
     }
 
-    public function paginateByMentor(?array $data, int $perPage = 5, int $page = 1)
+    public function paginateByMentor(?array $data, int $perPage = 5, int $page = 1, ?string $userId = null)
     {
         $data = $data ?? [];
         $model = $this->model->query()
             ->with('category:id,name', 'user:id,name,avatar')
             ->whereNotNull('user_id');
+
+        // Exclude courses that user has already transacted
+        if ($userId) {
+            $model->whereNotIn('id', function($query) use ($userId) {
+                $query->select('course_id')
+                    ->from('transactions')
+                    ->where('user_id', $userId)
+                    ->where('status', 'success');
+            });
+        }
 
         if (isset($data['search'])) {
             $model->where('title', 'like', '%' . $data['search'] . '%');

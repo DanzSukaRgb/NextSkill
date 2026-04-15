@@ -46,12 +46,13 @@ class CourseController extends Controller
     {
         $perPage = $request->perPage ?? 5;
         $page = $request->page ?? 1;
+        $userId = auth()->id();
         $payload = $request->only([
             'search',
             'category_id',
             'status',
         ]);
-        $courses = $this->repo->paginateByMentor($payload, $perPage, $page);
+        $courses = $this->repo->paginateByMentor($payload, $perPage, $page, $userId);
         return BaseResponse::success('Daftar kursus', [
             'data' => CourseResource::collection($courses),
             'pagination' => PaginationHelper::paginate($courses),
