@@ -66,7 +66,10 @@ class DashboardController extends Controller
         $siswaAktif = User::where('role', 'student')->count();
 
         // Transaction volume last 6 months
-        $transaksiChart = Transaction::selectRaw('MONTH(created_at) as bulan, SUM(gross_amount) as total')
+        $isSqlite = config('database.default') === 'sqlite';
+        $selectRaw = $isSqlite ? "cast(strftime('%m', created_at) as integer) as bulan" : "MONTH(created_at) as bulan";
+
+        $transaksiChart = Transaction::selectRaw($selectRaw . ', SUM(gross_amount) as total')
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy('bulan')
             ->orderBy('bulan')
@@ -131,10 +134,13 @@ class DashboardController extends Controller
         })->sum('mentor_revenue');
 
         // Monthly student registration
+        $isSqlite = config('database.default') === 'sqlite';
+        $selectRaw = $isSqlite ? "cast(strftime('%m', created_at) as integer) as bulan" : "MONTH(created_at) as bulan";
+
         $pendaftaranBulanan = Enrollment::whereHas('course', function ($query) use ($mentorId) {
             $query->where('user_id', $mentorId);
         })
-            ->selectRaw('MONTH(created_at) as bulan, COUNT(*) as total')
+            ->selectRaw($selectRaw . ', COUNT(*) as total')
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy('bulan')
             ->orderBy('bulan')
