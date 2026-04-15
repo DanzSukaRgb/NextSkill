@@ -102,7 +102,7 @@ class StudentCourseController extends Controller
             $userId = auth()->id();
 
             $query = Certificate::where('user_id', $userId)
-                ->with(['course.category', 'course.user']);
+                ->with(['course.category', 'course.user', 'user']);
 
             $certificates = $query->orderBy('issued_at', 'desc')->get();
 
@@ -110,6 +110,7 @@ class StudentCourseController extends Controller
                 return [
                     'id' => $cert->id,
                     'certificate_number' => $cert->certificate_number,
+                    'student_name' => $cert->user->name,
                     'course_id' => $cert->course->id,
                     'course_title' => $cert->course->title,
                     'mentor_name' => $cert->course->user->name,
