@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('quizzes/{quizId}', [QuizController::class, 'show']);
     Route::post('quizzes/{quizId}/submit', [QuizController::class, 'submitAnswers']);
     Route::get('quizzes/{quizId}/attempts', [QuizController::class, 'getAttempts']);
+    Route::get('courses/{courseId}/quizzes', [QuizManagementController::class, 'quizzesByCourse']);
     Route::get('quiz-attempts/{attemptId}/result', [QuizController::class, 'getResult']);
 
     Route::get('tasks/{taskId}', [TaskController::class, 'show']);
@@ -75,7 +76,6 @@ Route::middleware(['auth:sanctum', 'checkRole:mentor'])->group(function () {
     Route::put('quizzes/{quizId}', [QuizManagementController::class, 'update']);
     Route::delete('quizzes/{quizId}', [QuizManagementController::class, 'destroy']);
     Route::get('quizzes/{quizId}/manage', [QuizManagementController::class, 'show']);
-    Route::get('courses/{courseId}/quizzes', [QuizManagementController::class, 'quizzesByCourse']);
 
     Route::post('quizzes/{quizId}/questions/mcq', [QuizManagementController::class, 'addMCQQuestions']);
     Route::delete('questions/{questionId}', [QuizManagementController::class, 'deleteMCQQuestion']);
