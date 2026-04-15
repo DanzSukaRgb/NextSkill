@@ -91,6 +91,7 @@ trait HasFileUpload
             return null;
         }
 
-        return asset('storage/' . $filePath);
+        // Use ImageHelper for consistent URL handling
+        return \App\Helpers\ImageHelper::getImageUrl($filePath);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\BaseResponse;
+use App\Helpers\ImageHelper;
 use App\Models\Course;
 use App\Models\User;
 use App\Models\Transaction;
@@ -272,7 +273,7 @@ class DashboardController extends Controller
                 'title' => $course->title,
                 'mentor_name' => $course->user->name ?? 'Unknown',
                 'progress' => $progress,
-                'thumbnail' => $course->thumbnail ? asset('storage/' . $course->thumbnail) : null,
+                'thumbnail' => ImageHelper::getImageUrl($course->thumbnail),
                 'status' => $progress === 100 ? 'Completed' : 'In Progress',
             ];
         })->take(5);
@@ -290,7 +291,7 @@ class DashboardController extends Controller
                     'category' => $course->category->name ?? 'General',
                     'price' => (int) $course->price,
                     'rating' => 4.5, // Placeholder sampai review system ada
-                    'thumbnail' => $course->thumbnail ? asset('storage/' . $course->thumbnail) : null,
+                    'thumbnail' => ImageHelper::getImageUrl($course->thumbnail),
                 ];
             });
 
