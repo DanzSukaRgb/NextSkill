@@ -42,6 +42,23 @@ class CourseController extends Controller
             'pagination' => PaginationHelper::paginate($courses),
         ]);
     }
+
+    public function publicIndex(Request $request)
+    {
+        $perPage = $request->perPage ?? 5;
+        $page = $request->page ?? 1;
+        $payload = $request->only([
+            'search',
+            'category_id',
+        ]);
+        $payload['status'] = 'published';
+
+        $courses = $this->repo->paginate($payload, $perPage, $page);
+        return BaseResponse::success('Daftar kursus publik', [
+            'data' => CourseResource::collection($courses),
+            'pagination' => PaginationHelper::paginate($courses),
+        ]);
+    }
     public function indexByMentor(Request $request)
     {
         $perPage = $request->perPage ?? 5;
@@ -95,6 +112,16 @@ class CourseController extends Controller
         }
 
         return BaseResponse::Success('Detail kursus', new CourseResource($course));
+    }
+
+    public function publicShow(string $id)
+    {
+        $course = $this->repo->findById($id);
+        if (!$course || $course->status !== 'published') {
+            return BaseResponse::Custom(false, 'Kursus tidak ditemukan atau tidak tersedia secara publik', null, 404);
+        }
+
+        return BaseResponse::Success('Detail kursus publik', new CourseResource($course));
     }
 
     /**

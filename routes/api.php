@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 Route::post('midtrans/callback', [PaymentCallbackController::class, 'callback']);
+Route::get('courses/public', [CourseController::class, 'publicIndex']);
+Route::get('courses/public/{id}', [CourseController::class, 'publicShow']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
